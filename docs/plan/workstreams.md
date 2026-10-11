@@ -117,13 +117,13 @@ Everything else branches from `scaffold`, so it should be small and land first.
 | `auth` | Custom `User`, allauth headless with email and Google, sign-in and sign-up pages. Milestone 2. | `scaffold` |
 | `courses` | `Course`, `Lecture`, `Slide`; provider registry with settings schemas; courses API. | `scaffold` |
 | `frontend-shell` | Routing, layout, TanStack Query client on the generated types, shadcn/ui setup, My courses and New course pages. | `scaffold` |
-| `infra-terraform` | Terraform modules, the `org` environment (accounts, service control policies, Identity Center, CloudTrail) and the staging environment, with the controls in [security.md](security.md): three subnet tiers, per-service task roles, the KMS key, TLS everywhere. `validate`, Checkov and `plan` in CI, and Dependabot. Doesn't touch app code. | `scaffold` |
+| `infra-terraform` | Terraform modules, the `org` environment (accounts, service control policies, Identity Center, CloudTrail) and the staging environment, with the controls in [security.md](security.md): three subnet tiers, per-service task roles, the KMS key, TLS everywhere. `validate`, Checkov, gitleaks and `plan` in CI, and Dependabot. No account IDs, bucket names or `tfvars` committed: values come from GitHub environment variables and `.env`. Doesn't touch app code. | `scaffold` |
 
 ### LectureCast, wave 3
 
 | Branch | Contents | Needs |
 |---|---|---|
-| `deploy-staging` | Docker images, the deploy workflow through the OIDC roles, the staging environment, weekly image rebuilds, the ZAP baseline scan, the `rotate-secrets` workflow (tested once) and a smoke test, so staging is up for M3. | `infra-terraform` |
+| `deploy-staging` | Docker images, the deploy workflow through the OIDC roles (account IDs and role ARNs from the `staging` GitHub environment's variables), the staging environment, weekly image rebuilds, the ZAP baseline scan, the `rotate-secrets` workflow (tested once) and a smoke test, so staging is up for M3. | `infra-terraform` |
 | `pipeline-core` | Stage registry, `StageNode`/`PipelineRun`/`StageRun`, the scheduler, lecture selection, staleness, workspace sync with the shared course cache, the pipeline API; fake stages. Milestone 3's backend. | `contracts`, `courses` |
 | `player` | Player page against fixture `player.json`: seeking, auto-advance, controls, KaTeX and code slides. Milestone 4's frontend. | `contracts`, `frontend-shell` |
 

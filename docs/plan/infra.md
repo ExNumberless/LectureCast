@@ -52,7 +52,9 @@ close to nothing for idle staging:
   (see [security.md](security.md#data)). RDS manages its own password there. SES sends email.
   Images are stored in ECR, scanned on push.
 - **Terraform state** lives in a versioned, encrypted S3 bucket in each account, with DynamoDB
-  locking. The `org` environment is applied by hand; staging and prod through CI.
+  locking. The `org` environment is applied by hand; staging and prod through CI. Account IDs,
+  role ARNs and backend settings come from GitHub environment variables and `.env`, never from
+  committed files (see [security.md](security.md#public-repo)).
 - **CI deploys** through GitHub OIDC, with a plan-only role for pull requests and a deploy role
   limited to the `staging` and `prod` GitHub environments: build and push images, run migrations
   as a one-off task, update services, and upload the SPA. A weekly rebuild keeps images patched,
