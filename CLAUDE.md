@@ -22,3 +22,13 @@ Phase 0 of the plan changes those two libraries before any LectureCast code is w
   Terraform on AWS (ECS Fargate).
 - Claude models default to `claude-opus-5-5`. API keys come from `.env` (gitignored), loaded by
   mise.
+
+## Workflow
+
+- Work is tracked as GitHub issues in milestones M1–M8, one issue per branch, following
+  [docs/plan/workstreams.md](docs/plan/workstreams.md). Phase 0 issues live in the library repos.
+- One branch per issue, named as the issue says, in its own worktree when sessions run in
+  parallel. Check the issue's "Needs first" list is merged before starting.
+- `main` is protected: open a PR that closes its issue (`Closes #N`) and passes CI. Addison
+  reviews and squash-merges; never merge or enable auto-merge yourself.
+- Plan changes go through PRs too, and update every doc they touch.
