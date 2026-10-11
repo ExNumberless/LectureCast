@@ -5,6 +5,7 @@ requires-python = ">=3.13"
 description = "LectureCast backend: Django API and Celery workers"
 dependencies = [
     "celery[redis]>=5.6.3",
+    "django-allauth[headless,socialaccount]>=65.19.0",
     "django>=6.1.2",
     "django-environ>=0.14.0",
     "djangorestframework>=3.18.3",
