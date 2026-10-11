@@ -49,6 +49,9 @@ with deleted Google Slides decks). Both run from a CLI, on files, with the user'
 - An AWS Organization with separate staging and prod accounts. People have read-only access day
   to day, and only CI changes infrastructure. GuardDuty and a customer-managed KMS key from the
   start, WAF in prod at M6, and Security Hub and AWS Config deferred.
+- AWS region us-west-2. Prod runs at `lecturecast.exnumberless.com` and staging at
+  `staging.lecturecast.exnumberless.com`. The AWS account that already holds `exnumberless.com`
+  becomes the Organization's management account.
 - MIT license, matching CSTL and STL.
 
 ## User levels
@@ -96,9 +99,6 @@ Each topic doc ends with its own verification section.
 ## Open questions
 
 - **Catalog licensing:** settled before M7.
-- **Domain and region:** not chosen yet. Needed for staging in M3 (Google OAuth, SES and
-  CloudFront). The accounts are settled: an AWS Organization with staging and prod accounts (see
-  [security.md](docs/plan/security.md)).
 
 The order the work can happen in, with branches that run in parallel, is in
 [workstreams.md](docs/plan/workstreams.md).

@@ -26,9 +26,9 @@ plain plan/apply review and state stored in S3.
 
 Staging goes up in M3 and prod in M6. LectureCast uses an AWS Organization with a management
 account and separate staging and prod accounts; the accounts, access and every security control
-below are in [security.md](security.md). The domain and region aren't chosen yet, so they are
-Terraform variables. Sizing keeps idle costs low, aiming at roughly $60–100 a month for prod and
-close to nothing for idle staging:
+below are in [security.md](security.md). Everything runs in us-west-2, under subdomains of
+`exnumberless.com` (see [Domain and region](#domain-and-region)). Sizing keeps idle costs low,
+aiming at roughly $60–100 a month for prod and close to nothing for idle staging:
 - staging's services scale to zero, and its database stops, when it isn't in use;
 - workers run on Fargate Spot (a stage interrupted mid-run is retried by the scheduler);
 - one NAT gateway plus the free S3 and DynamoDB gateway endpoints, with no interface endpoints
@@ -63,6 +63,27 @@ close to nothing for idle staging:
   and an OWASP ZAP baseline scan runs against staging after each deploy.
 - **Detection and backups:** an organization CloudTrail, GuardDuty in prod, and prod database
   backups copied to the management account (see [security.md](security.md)).
+
+## Domain and region
+
+- **Region:** us-west-2, with CloudFront's ACM certificates in us-east-1 as CloudFront requires.
+- **Addresses:** prod at `lecturecast.exnumberless.com`, staging at
+  `staging.lecturecast.exnumberless.com`.
+- **DNS:** `exnumberless.com` is registered with Amazon and its Route 53 zone is in the
+  management account, next to personal iCloud mail records that LectureCast doesn't touch.
+  Staging goes live in M3 but prod isn't built until M6, so the `org` environment sets up all
+  the delegation in M3:
+  - a `lecturecast.exnumberless.com` hosted zone in the prod account, and the NS record in
+    `exnumberless.com` that delegates to it;
+  - a `staging.lecturecast.exnumberless.com` hosted zone in the staging account, and the NS
+    record in the prod account's zone that delegates to it.
+
+  The staging and prod environments look their zone up by name and add only their own records:
+  certificates, SES and CAA.
+- **Google sign-in:** the OAuth consent screen lists `exnumberless.com` as its authorized domain,
+  verified with a TXT record in the management account's zone. Verification also needs a home
+  page and a privacy policy URL on that domain, so both exist on staging before M3's sign-in
+  goes live.
 
 ## Verification
 

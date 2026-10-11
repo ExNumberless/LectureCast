@@ -30,12 +30,12 @@ An AWS Organization with three accounts:
 
 | Account | Holds |
 |---|---|
-| management | The organization, its policies, IAM Identity Center, the CloudTrail log bucket and the backup vault. No workloads. |
+| management | The existing account that holds `exnumberless.com` (its registration and Route 53 zone), now also the organization, its policies, IAM Identity Center, the CloudTrail log bucket and the backup vault. No workloads. |
 | staging | The staging environment. |
 | prod | The prod environment. |
 
 - **Service control policies** on the staging and prod accounts deny:
-  - every region except the chosen one, exempting the global services AWS lists (CloudFront's
+  - every region except us-west-2, exempting the global services AWS lists (CloudFront's
     ACM certificate, IAM, WAF for CloudFront and others in us-east-1);
   - stopping or deleting CloudTrail, disabling GuardDuty, leaving the organization, and
     deleting the CloudTrail log bucket or its objects;
@@ -59,6 +59,13 @@ An AWS Organization with three accounts:
   logs S3 data events on the bucket, so every read of state is recorded with who made it. The `org`
   environment (accounts, policies, Identity Center, CloudTrail) is applied by hand with the
   admin permission set, since it changes rarely and CI has no access to the management account.
+- **Auditing the management account.** Service control policies never restrict the management
+  account, and it has been in use for the domain, so before the `org` environment is applied:
+  - list IAM users and access keys, and remove them in favor of Identity Center;
+  - check that root has MFA and no access keys;
+  - look for resources in every region (Tag Editor and the billing breakdown), and move or
+    delete them;
+  - turn on billing alerts, since it becomes the payer account.
 
 ## Network
 
@@ -84,9 +91,29 @@ The VPC has three subnet tiers in two availability zones:
   APIs). S3 and DynamoDB use the free gateway endpoints. Interface endpoints (ECR, Secrets
   Manager, KMS, Logs) would cost about $7 a month each per availability zone, $40–60 in all, so
   that traffic goes through the NAT, still over TLS.
-- The default security group has no rules, and the default VPC is deleted in the chosen region.
+- The default security group has no rules, and the default VPC is deleted in us-west-2.
 - Operators reach the database through ECS Exec or SSM Session Manager. There is no bastion host
   and no SSH.
+
+## Domain and email
+
+LectureCast lives under a domain that also carries personal iCloud mail, so it keeps to its own
+subdomain (see [infra.md](infra.md#domain-and-region)):
+- **Cookies.** Another `exnumberless.com` subdomain could set cookies for the parent domain.
+  In staging and prod, Django's session and CSRF cookies use the `__Host-` prefix
+  (`__Host-sessionid`, `__Host-csrftoken`), which browsers accept only from LectureCast's own
+  host, over HTTPS, with no `Domain` attribute. The names and `Secure` come from the
+  environment; the dev stack runs over plain HTTP, where Safari rejects `__Host-` cookies, so it
+  keeps Django's default names.
+- **HSTS** on `lecturecast.exnumberless.com` with `includeSubDomains`, covering staging. The
+  parent domain isn't on the HSTS preload list, since that would bind every other subdomain.
+- **CAA** records on `lecturecast.exnumberless.com` allow only Amazon to issue certificates
+  (`amazon.com`, `amazontrust.com`, `awstrust.com` and `amazonaws.com`, the names ACM accepts).
+- **Email.** SES sends from `lecturecast.exnumberless.com` (and `staging.…` in staging) with Easy
+  DKIM, a custom MAIL FROM subdomain for SPF, and a DMARC record of its own (`p=quarantine` once
+  the reports are clean). The iCloud mail on `exnumberless.com` keeps its own SPF and reputation.
+  The parent domain has no DMARC record yet; adding one (`p=none` to start) is outside
+  LectureCast but protects the personal addresses from spoofing.
 
 ## Data
 
@@ -243,6 +270,7 @@ KMS key), rising to about $15 when WAF is added at M6. Backup storage grows with
 - In staging, `worker-fetch`'s `fetch` database role can't read or write tables outside its
   grants, such as users and sessions.
 - A pull request's CI job can't assume `ci-deploy`.
+- The management account has no IAM users or access keys, and its root user has MFA.
 - Reading the Terraform state bucket shows up in CloudTrail.
 - The `rotate-secrets` workflow runs in staging without failed requests or Celery connection
   errors, and the old token and header are rejected afterwards.

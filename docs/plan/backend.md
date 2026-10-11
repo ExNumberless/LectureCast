@@ -11,7 +11,12 @@ the private billing plan.
 `accounts.User` is a custom user model, created first. Auth uses **django-allauth in headless
 mode** with email and Google sign-in, session cookies, and CSRF. Viewers can browse as soon as
 they sign up; verifying their email is required before subscribing. The SPA and API share one
-domain through CloudFront path routing, which avoids CORS.
+domain through CloudFront path routing, which avoids CORS. In staging and prod, the session and
+CSRF cookies use the `__Host-` prefix, since the site shares its parent domain,
+`exnumberless.com`, with other hosts (see [security.md](security.md#domain-and-email)). The
+cookie names and `Secure` come from the environment, and the dev stack keeps Django's defaults,
+so the SPA gets the CSRF cookie name from the API instead of hard-coding `csrftoken`. Email comes
+from `lecturecast.exnumberless.com` through SES.
 
 allauth's rate limits cover sign-in, sign-up and password reset, and DRF throttles cover the API,
 with stricter limits on run creation and estimates. In prod, WAF adds rate limits at the edge from
