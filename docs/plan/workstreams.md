@@ -117,13 +117,13 @@ Everything else branches from `scaffold`, so it should be small and land first.
 | `auth` | Custom `User`, allauth headless with email and Google, sign-in and sign-up pages. Milestone 2. | `scaffold` |
 | `courses` | `Course`, `Lecture`, `Slide`; provider registry with settings schemas; courses API. | `scaffold` |
 | `frontend-shell` | Routing, layout, TanStack Query client on the generated types, shadcn/ui setup, My courses and New course pages. | `scaffold` |
-| `infra-terraform` | Terraform modules and the staging environment, with `validate` and `plan` in CI. Doesn't touch app code. | `scaffold` |
+| `infra-terraform` | Terraform modules, the `org` environment (accounts, service control policies, Identity Center, CloudTrail) and the staging environment, with the controls in [security.md](security.md): three subnet tiers, per-service task roles, the KMS key, TLS everywhere. `validate`, Checkov and `plan` in CI, and Dependabot. Doesn't touch app code. | `scaffold` |
 
 ### LectureCast, wave 3
 
 | Branch | Contents | Needs |
 |---|---|---|
-| `deploy-staging` | Docker images, the deploy workflow, the staging environment and a smoke test, so staging is up for M3. | `infra-terraform` |
+| `deploy-staging` | Docker images, the deploy workflow through the OIDC roles, the staging environment, weekly image rebuilds, the ZAP baseline scan and a smoke test, so staging is up for M3. | `infra-terraform` |
 | `pipeline-core` | Stage registry, `StageNode`/`PipelineRun`/`StageRun`, the scheduler, lecture selection, staleness, workspace sync with the shared course cache, the pipeline API; fake stages. Milestone 3's backend. | `contracts`, `courses` |
 | `player` | Player page against fixture `player.json`: seeking, auto-advance, controls, KaTeX and code slides. Milestone 4's frontend. | `contracts`, `frontend-shell` |
 
@@ -133,10 +133,10 @@ Everything else branches from `scaffold`, so it should be small and land first.
 |---|---|---|
 | `pipeline-view` | The pipeline view: lecture × stage grid, node detail, run dialog. | `pipeline-core`, `frontend-shell` |
 | `editing` | Per-section editing of materials and transcripts, keeping the generated original; diff view; staleness on save. Part of milestone 3. | `pipeline-core`, `frontend-shell` |
-| `pipeline-adapters` | Real CSTL/STL calls behind the adapter, the `tts` queue, safety checks (SSRF, limits, zip checks). Completes milestones 3 and 4 with the two test courses on staging. | `pipeline-core`, both releases |
+| `pipeline-adapters` | Real CSTL/STL calls behind the adapter, the `tts` and `fetch` queues, safety checks (SSRF, limits, zip checks). Completes milestones 3 and 4 with the two test courses on staging. | `pipeline-core`, both releases |
 | `billing-plans` | `Plan`, capabilities, `HasCapability`, run-level capability checks, locked stages in the API. | `pipeline-core`, `auth` |
 | `catalog-publish` | `Publication`, publication requests, first-publication moderation, license rules, freezing, reports and takedown, catalog page. | `pipeline-core` |
-| `deploy-prod` | The prod environment, the domain, and promoting deploys from staging. Milestone 6. | `deploy-staging` |
+| `deploy-prod` | The prod environment, the domain, and promoting deploys from staging, with GuardDuty, WAF and backups copied to the management account. Milestone 6. | `deploy-staging` |
 
 ### LectureCast, wave 5
 

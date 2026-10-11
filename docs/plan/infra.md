@@ -9,11 +9,13 @@ LectureCast/
   backend/                  Django project "lecturecast" (uv, Python 3.13)
     accounts/  billing/  courses/  pipeline/  catalog/
   frontend/                 Vite + React + TypeScript (pnpm)
-  infra/terraform/          modules: network, ecs, rds, redis, storage_cdn, secrets, ses; envs: staging, prod
+  infra/terraform/          modules: org, network, ecs, rds, redis, storage_cdn, kms, secrets, ses,
+                            backup, waf; envs: org, staging, prod
   docker/                   api.Dockerfile, worker.Dockerfile (ffmpeg, libreoffice-impress, fonts)
   docker-compose.yml        postgres, redis, minio (S3), api, worker, vite dev server
   mise.toml                 python, node, uv, pnpm, terraform, and tasks: dev, test, lint, migrate, tf-plan
-  .github/workflows/        ci.yml (tests, lint, type-check, terraform validate), deploy.yml
+  .github/workflows/        ci.yml (tests, lint, type-check, terraform validate, Checkov), deploy.yml
+  .github/dependabot.yml    uv, pnpm, GitHub Actions and Dockerfiles
   docs/plan/                the plan's topic docs
 ```
 
@@ -22,27 +24,41 @@ LectureCast/
 AWS ECS Fargate, managed with Terraform. Terraform and CDK do the same job; Terraform gives a
 plain plan/apply review and state stored in S3.
 
-Staging goes up in M3 and prod in M6. The domain and AWS account aren't chosen yet, so they are
+Staging goes up in M3 and prod in M6. LectureCast uses an AWS Organization with a management
+account and separate staging and prod accounts; the accounts, access and every security control
+below are in [security.md](security.md). The domain and region aren't chosen yet, so they are
 Terraform variables. Sizing keeps idle costs low, aiming at roughly $60–100 a month for prod and
 close to nothing for idle staging:
 - staging's services scale to zero, and its database stops, when it isn't in use;
 - workers run on Fargate Spot (a stage interrupted mid-run is retried by the scheduler);
 - one NAT gateway, or VPC endpoints for S3, ECR and Secrets Manager in its place;
-- the smallest RDS and ElastiCache instances, sized up from real usage.
+- the smallest RDS and ElastiCache instances, sized up from real usage;
+- security services add about $1–2 a month to staging and $5 to prod, rising to $15 with WAF
+  at M6 (see [security.md](security.md#costs)).
 
-- A VPC with public and private subnets.
-- **ECS Fargate services:** `api` (gunicorn behind an ALB), `worker` (Celery, default queue),
-  `worker-tts` (the `tts` queue), and `beat`.
-- **Data:** RDS Postgres and ElastiCache Redis.
+- A VPC with public, private and internal subnets (the database and Redis have no route out).
+- **ECS Fargate services:** `api` (gunicorn behind an ALB that accepts only CloudFront),
+  `worker` (Celery, default queue), `worker-tts` (the `tts` queue), `worker-fetch` (the `fetch`
+  queue, isolated because it requests user-supplied URLs), and `beat`. Each has its own task role
+  and secrets.
+- **Data:** RDS Postgres and ElastiCache Redis, encrypted with a customer-managed KMS key and
+  reached over TLS.
 - **S3:** a private media bucket and a SPA bucket, both behind CloudFront. Routes: `/api/*` to the
   ALB, `/media/*` to S3 with signed URLs, everything else to the SPA.
-- **Secrets Manager** holds the Anthropic, Speechify, Stripe and Django keys. SES sends email.
-  Images are stored in ECR.
-- **Terraform state** lives in S3 with DynamoDB locking, with staging and prod environments.
-- **CI deploys** through GitHub OIDC: build and push images, run migrations as a one-off task,
-  update services, and upload the SPA.
+- **Secrets Manager** holds the Anthropic, Speechify, Stripe and Django keys, set by hand so
+  their values never enter Terraform state. RDS manages its own password there. SES sends email.
+  Images are stored in ECR, scanned on push.
+- **Terraform state** lives in a versioned, encrypted S3 bucket in each account, with DynamoDB
+  locking. The `org` environment is applied by hand; staging and prod through CI.
+- **CI deploys** through GitHub OIDC, with a plan-only role for pull requests and a deploy role
+  limited to the `staging` and `prod` GitHub environments: build and push images, run migrations
+  as a one-off task, update services, and upload the SPA. A weekly rebuild keeps images patched,
+  and an OWASP ZAP baseline scan runs against staging after each deploy.
+- **Detection and backups:** an organization CloudTrail, GuardDuty in prod, and prod database
+  backups copied to the management account (see [security.md](security.md)).
 
 ## Verification
 
-`terraform validate` and `plan` in CI, a staging deploy, and a smoke test that runs a real
-pipeline on one OCW lecture.
+`terraform validate`, Checkov and `plan` in CI, a staging deploy, and a smoke test that runs a
+real pipeline on one OCW lecture. The security checks are listed in
+[security.md](security.md#verification).
