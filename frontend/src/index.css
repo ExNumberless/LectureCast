@@ -1,10 +1,30 @@
 :root {
   font-family: system-ui, sans-serif;
-  color-scheme: light dark;
+  color: #1f2937;
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
 main {
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+  max-width: 34rem;
+  margin: 8vh auto;
+  padding: 2rem;
 }
+
+.auth-card {
+  max-width: 26rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 1rem 3rem #0f172a12;
+}
+
+form { display: grid; gap: 1rem; margin: 1.5rem 0; }
+label { display: grid; gap: 0.4rem; font-weight: 600; }
+input, button, .google-button { font: inherit; border-radius: 0.5rem; padding: 0.7rem 0.8rem; }
+input { border: 1px solid #cbd5e1; }
+button, .google-button { display: inline-block; border: 0; background: #2457c5; color: white; text-align: center; text-decoration: none; cursor: pointer; }
+button:disabled { opacity: 0.65; cursor: wait; }
+.secondary-button { margin-top: 0.75rem; background: #475569; }
+.google-button { width: calc(100% - 1.6rem); background: white; color: #1f2937; border: 1px solid #cbd5e1; }
