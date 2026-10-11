@@ -194,6 +194,20 @@ key when it lands.
   workflow artifact. It reports only at first, and blocks on high-risk alerts once the baseline
   is clean.
 
+## Public repo
+
+The repo is public, so committed code names no specific account or resource:
+- Committed Terraform has no AWS account IDs, ARNs containing them, or state bucket names, and
+  no `*.tfvars` files. `.gitignore` covers `*.tfvars`, `*.tfstate*`, `.terraform/`, `.env`
+  and Terraform's local override files; `.terraform.lock.hcl` stays committed.
+- Terraform looks account IDs up at run time (`data "aws_caller_identity"`) wherever it can.
+- CI reads account IDs, role ARNs and backend settings from variables on the `staging` and
+  `prod` GitHub environments. Locally they come from `.env`, loaded by mise; that includes the
+  `org` environment, applied by hand from the management account.
+- **gitleaks** runs in `ci.yml` and fails on committed secrets and on 12-digit AWS account IDs
+  under `infra/`. GitHub's secret scanning and push protection are on as well, and stop a known
+  key format before it reaches the repo.
+
 ## Deferred
 
 **Security Hub and AWS Config** check live infrastructure against benchmarks such as CIS. They
