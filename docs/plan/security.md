@@ -198,7 +198,8 @@ key when it lands.
 
 The repo is public, so committed code names no specific account or resource:
 - Committed Terraform has no AWS account IDs, ARNs containing them, or state bucket names, and
-  no `*.tfvars` files. `.gitignore` covers `*.tfvars`, `*.tfstate*`, `.terraform/` and `.env`.
+  no `*.tfvars` files. `.gitignore` covers `*.tfvars`, `*.tfstate*`, `.terraform/`, `.env`
+  and Terraform's local override files; `.terraform.lock.hcl` stays committed.
 - Terraform looks account IDs up at run time (`data "aws_caller_identity"`) wherever it can.
 - CI reads account IDs, role ARNs and backend settings from variables on the `staging` and
   `prod` GitHub environments. Locally they come from `.env`, loaded by mise; that includes the
