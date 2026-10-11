@@ -1,0 +1,96 @@
+# Local development: `mise run dev`. The app is on http://localhost:5173 (Vite, proxying /api to
+# Django), Mailpit on http://localhost:8025 and the MinIO console on http://localhost:9001.
+
+x-backend: &backend
+  build:
+    context: .
+    dockerfile: docker/api.Dockerfile
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-only-not-secret}
+    DJANGO_DEBUG: "true"
+    DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
+    DATABASE_URL: postgres://lecturecast:lecturecast@postgres:5432/lecturecast
+    REDIS_URL: redis://redis:6379/0
+    AWS_S3_ENDPOINT_URL: http://minio:9000
+    AWS_ACCESS_KEY_ID: minioadmin
+    AWS_SECRET_ACCESS_KEY: minioadmin
+    EMAIL_HOST: mailpit
+    EMAIL_PORT: "1025"
+  volumes:
+    - ./backend:/app/backend
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: lecturecast
+      POSTGRES_PASSWORD: lecturecast
+      POSTGRES_DB: lecturecast
+    ports: ["5432:5432"]
+    volumes: [postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "lecturecast"]
+      interval: 2s
+      retries: 15
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 15
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [minio:/data]
+
+  # Creates the media bucket once MinIO is up.
+  minio-setup:
+    image: minio/mc
+    depends_on: [minio]
+    entrypoint: >
+      sh -c "until mc alias set local http://minio:9000 minioadmin minioadmin; do sleep 1; done;
+             mc mb --ignore-existing local/lecturecast-media"
+
+  mailpit:
+    image: axllent/mailpit
+    ports: ["1025:1025", "8025:8025"]
+
+  api:
+    <<: *backend
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports: ["8000:8000"]
+
+  worker:
+    <<: *backend
+    command: celery -A lecturecast worker --loglevel=info
+
+  web:
+    image: node:24
+    working_dir: /app/frontend
+    command: sh -c "npm install -g pnpm@12.11.2 && pnpm install && pnpm dev --host 0.0.0.0"
+    environment:
+      API_PROXY_TARGET: http://api:8000
+    ports: ["5173:5173"]
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    depends_on: [api]
+
+volumes:
+  postgres:
+  minio:
