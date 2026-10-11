@@ -11,7 +11,7 @@ LectureCast/
   frontend/                 Vite + React + TypeScript (pnpm)
   infra/terraform/          modules: network, ecs, rds, redis, storage_cdn, secrets, ses; envs: staging, prod
   docker/                   api.Dockerfile, worker.Dockerfile (ffmpeg, libreoffice-impress, fonts)
-  docker-compose.yml        postgres, redis, minio (S3), api, worker, vite dev server
+  docker-compose.yml        postgres, redis, rustfs (S3), mailpit, api, worker, vite dev server
   mise.toml                 python, node, uv, pnpm, terraform, and tasks: dev, test, lint, migrate, tf-plan
   .github/workflows/        ci.yml (tests, lint, type-check, terraform validate), deploy.yml
   docs/plan/                the plan's topic docs

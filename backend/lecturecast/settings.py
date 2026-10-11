@@ -95,6 +95,6 @@ CELERY_BROKER_URL = env("REDIS_URL")
 CELERY_RESULT_BACKEND = env("REDIS_URL")
 CELERY_TASK_TRACK_STARTED = True
 
-# S3-compatible storage: MinIO locally, S3 in AWS. Wired into STORAGES when media is first stored.
+# S3-compatible storage: RustFS locally, S3 in AWS. Wired into STORAGES when media is first stored.
 AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default="lecturecast-media")
 AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL", default=None)

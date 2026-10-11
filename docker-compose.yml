@@ -1,5 +1,6 @@
 # Local development: `mise run dev`. The app is on http://localhost:5173 (Vite, proxying /api to
-# Django), Mailpit on http://localhost:8025 and the MinIO console on http://localhost:9001.
+# Django), Mailpit on http://localhost:8025 and the RustFS console on
+# http://localhost:9001/rustfs/console/.
 
 x-backend: &backend
   build:
@@ -14,7 +15,7 @@ x-backend: &backend
     DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
     DATABASE_URL: postgres://lecturecast:lecturecast@postgres:5432/lecturecast
     REDIS_URL: redis://redis:6379/0
-    AWS_S3_ENDPOINT_URL: http://minio:9000
+    AWS_S3_ENDPOINT_URL: http://s3:9000
     AWS_ACCESS_KEY_ID: minioadmin
     AWS_SECRET_ACCESS_KEY: minioadmin
     EMAIL_HOST: mailpit
@@ -34,7 +35,7 @@ services:
       POSTGRES_USER: lecturecast
       POSTGRES_PASSWORD: lecturecast
       POSTGRES_DB: lecturecast
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432"]
     volumes: [postgres:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "lecturecast"]
@@ -43,37 +44,44 @@ services:
 
   redis:
     image: redis:7
-    ports: ["6379:6379"]
+    ports: ["127.0.0.1:6379:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 2s
       retries: 15
 
-  minio:
-    image: minio/minio
-    command: server /data --console-address :9001
+  # S3-compatible storage. MinIO no longer publishes images, so RustFS (MinIO-compatible) stands in.
+  s3:
+    image: rustfs/rustfs:1.0.1
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    ports: ["9000:9000", "9001:9001"]
-    volumes: [minio:/data]
+      RUSTFS_ACCESS_KEY: minioadmin
+      RUSTFS_SECRET_KEY: minioadmin
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports: ["127.0.0.1:9000:9000", "127.0.0.1:9001:9001"]
+    volumes: [s3:/data]
 
-  # Creates the media bucket once MinIO is up.
-  minio-setup:
-    image: minio/mc
-    depends_on: [minio]
-    entrypoint: >
-      sh -c "until mc alias set local http://minio:9000 minioadmin minioadmin; do sleep 1; done;
-             mc mb --ignore-existing local/lecturecast-media"
+  # Creates the media bucket once the S3 server is up.
+  s3-setup:
+    image: amazon/aws-cli:2.37.12
+    depends_on: [s3]
+    environment:
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        until aws --endpoint-url http://s3:9000 s3api head-bucket --bucket lecturecast-media 2>/dev/null ||
+        aws --endpoint-url http://s3:9000 s3 mb s3://lecturecast-media; do sleep 1; done
 
   mailpit:
-    image: axllent/mailpit
-    ports: ["1025:1025", "8025:8025"]
+    image: axllent/mailpit:v1.31.5
+    ports: ["127.0.0.1:1025:1025", "127.0.0.1:8025:8025"]
 
   api:
     <<: *backend
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    ports: ["8000:8000"]
+    ports: ["127.0.0.1:8000:8000"]
 
   worker:
     <<: *backend
@@ -85,7 +93,7 @@ services:
     command: sh -c "npm install -g pnpm@12.11.2 && pnpm install && pnpm dev --host 0.0.0.0"
     environment:
       API_PROXY_TARGET: http://api:8000
-    ports: ["5173:5173"]
+    ports: ["127.0.0.1:5173:5173"]
     volumes:
       - ./frontend:/app/frontend
       - /app/frontend/node_modules
@@ -93,4 +101,4 @@ services:
 
 volumes:
   postgres:
-  minio:
+  s3:
