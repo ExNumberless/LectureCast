@@ -11,6 +11,7 @@ milestone below lists the docs it needs.
 | [backend.md](docs/plan/backend.md) | Django apps, auth, courses, provider registry, core API |
 | [frontend.md](docs/plan/frontend.md) | Pages, pipeline view, catalog UI, player |
 | [infra.md](docs/plan/infra.md) | Repo layout, docker-compose, Terraform, CI and deploy |
+| [workstreams.md](docs/plan/workstreams.md) | Parallel branches and PRs, and what each needs first |
 
 ## Context
 
@@ -84,3 +85,6 @@ later narrates 6–10. Each user pays only for the nodes (stage × lecture) they
 | 8 | Later: the AI-agent structure provider (planned earlier), and Save Page Now archiving with the archive.org S3-like keys. | backend, pipeline |
 
 Each topic doc ends with its own verification section.
+
+The order the work can happen in, with branches that run in parallel, is in
+[workstreams.md](docs/plan/workstreams.md).
