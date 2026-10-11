@@ -12,7 +12,7 @@ LectureCast/
   infra/terraform/          modules: org, network, ecs, rds, redis, storage_cdn, kms, secrets, ses,
                             backup, waf; envs: org, staging, prod
   docker/                   api.Dockerfile, worker.Dockerfile (ffmpeg, libreoffice-impress, fonts)
-  docker-compose.yml        postgres, redis, minio (S3), api, worker, vite dev server
+  docker-compose.yml        postgres, redis, rustfs (S3), mailpit, api, worker, vite dev server
   mise.toml                 python, node, uv, pnpm, terraform, and tasks: dev, test, lint, migrate, tf-plan
   .github/workflows/        ci.yml (tests, lint, type-check, terraform validate, Checkov), deploy.yml
   .github/dependabot.yml    uv, pnpm, GitHub Actions and Dockerfiles
