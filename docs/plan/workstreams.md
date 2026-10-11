@@ -105,7 +105,7 @@ The two library tracks run in parallel from the start. Only the CSTL release wai
 
 | Branch | Contents | Needs |
 |---|---|---|
-| `scaffold` | `mise.toml`, empty Django project and apps, Vite app, docker-compose (Postgres, Redis, MinIO), CI running lint and tests. | |
+| `scaffold` | `mise.toml`, empty Django project and apps, Vite app, docker-compose (Postgres, Redis, RustFS for S3, Mailpit), CI running lint and tests. | |
 
 Everything else branches from `scaffold`, so it should be small and land first.
 

@@ -1,0 +1,29 @@
+[project]
+name = "lecturecast"
+version = "0.1.0"
+requires-python = ">=3.13"
+description = "LectureCast backend: Django API and Celery workers"
+dependencies = [
+    "celery[redis]>=5.6.3",
+    "django>=6.1.2",
+    "django-environ>=0.14.0",
+    "djangorestframework>=3.18.3",
+    "psycopg[binary]>=3.3.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-django>=4.14.0",
+    "ruff>=0.17.0",
+]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+extend-select = ["I", "UP", "B", "DJ"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "lecturecast.settings"
