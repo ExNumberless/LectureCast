@@ -114,7 +114,7 @@ Everything else branches from `scaffold`, so it should be small and land first.
 | Branch | Contents | Needs |
 |---|---|---|
 | `contracts` | Stage function signature and adapter interface; reporter protocol on the backend side; `player.json` and `chapters.json` fixtures copied from the library PRs; drf-spectacular and TypeScript type generation. | `scaffold` |
-| `auth` | Custom `User`, allauth headless with email and Google, sign-in and sign-up pages. Milestone 2. | `scaffold` |
+| `auth` | Custom `User`, allauth headless with email and Google, `__Host-` session and CSRF cookies, sign-in and sign-up pages. Milestone 2. | `scaffold` |
 | `courses` | `Course`, `Lecture`, `Slide`; provider registry with settings schemas; courses API. | `scaffold` |
 | `frontend-shell` | Routing, layout, TanStack Query client on the generated types, shadcn/ui setup, My courses and New course pages. | `scaffold` |
 | `infra-terraform` | Terraform modules, the `org` environment (accounts, service control policies, Identity Center, CloudTrail) and the staging environment, with the controls in [security.md](security.md): three subnet tiers, per-service task roles, the KMS key, TLS everywhere. `validate`, Checkov and `plan` in CI, and Dependabot. Doesn't touch app code. | `scaffold` |
