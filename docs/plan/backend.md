@@ -13,6 +13,10 @@ mode** with email and Google sign-in, session cookies, and CSRF. Viewers can bro
 they sign up; verifying their email is required before subscribing. The SPA and API share one
 domain through CloudFront path routing, which avoids CORS.
 
+allauth's rate limits cover sign-in, sign-up and password reset, and DRF throttles cover the API,
+with stricter limits on run creation and estimates. In prod, WAF adds rate limits at the edge from
+M6 (see [security.md](security.md#edge-protection)).
+
 ## Courses
 
 - `Course(owner, title, source_url | upload, provider, plugin, settings JSON, license,
@@ -42,5 +46,5 @@ published ones.
 
 ## Verification
 
-pytest-django for the models and APIs, and provider settings validation (unknown keys rejected,
-schemas enforced).
+pytest-django for the models and APIs, provider settings validation (unknown keys rejected,
+schemas enforced), and throttling on sign-in and run creation.

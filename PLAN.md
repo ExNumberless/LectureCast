@@ -12,6 +12,7 @@ milestone below lists the docs it needs.
 | [backend.md](docs/plan/backend.md) | Django apps, auth, courses, provider registry, core API |
 | [frontend.md](docs/plan/frontend.md) | Pages, pipeline view, catalog UI, player |
 | [infra.md](docs/plan/infra.md) | Repo layout, docker-compose, Terraform, CI and deploy |
+| [security.md](docs/plan/security.md) | AWS accounts and access, network, encryption, backups, worker isolation, detection, CI checks |
 | [workstreams.md](docs/plan/workstreams.md) | Parallel branches and PRs, and what each needs first |
 
 ## Context
@@ -46,6 +47,9 @@ with deleted Google Slides decks). Both run from a CLI, on files, with the user'
 - Users can edit materials and lecture transcripts before later stages run. The site keeps the
   generated original and shows a diff of every edit.
 - AWS ECS Fargate, managed with Terraform, sized to keep idle costs low. Staging is up from M3.
+- An AWS Organization with separate staging and prod accounts. People have read-only access day
+  to day, and only CI changes infrastructure. GuardDuty and a customer-managed KMS key from the
+  start, WAF in prod at M6, and Security Hub and AWS Config deferred.
 - MIT license, matching CSTL and STL.
 
 ## User levels
@@ -81,10 +85,10 @@ later narrates 6–10. Each user pays only for the nodes (stage × lecture) they
 |---|---|---|
 | 1 | Phase 0 library work, with packages published. | phase0-libraries |
 | 2 | Repo scaffold and local docker-compose, with auth working end to end. | infra, backend, frontend |
-| 3 | Courses and the pipeline (stage registry, graph scheduler, runs and the pipeline view), editing materials and transcripts with diffs, and a staging deploy, with no billing yet. | backend, pipeline, frontend, infra |
+| 3 | Courses and the pipeline (stage registry, graph scheduler, runs and the pipeline view), editing materials and transcripts with diffs, and a staging deploy, with no billing yet. | backend, pipeline, frontend, infra, security |
 | 4 | The player, including lectures with audio but no slides. Done when CS 61A lecture 1 and 18.014 chapter A play correctly on staging. | frontend, backend |
 | 5 | User levels and billing: plans and capabilities, Stripe test mode with Stripe Tax, estimates, credits (monthly grants with rollover, top-ups and a trial grant) and limits, and usage events with the admin cost dashboard. | billing-and-costs, pipeline |
-| 6 | Prod: the prod environment, the domain, and deploys promoted from staging. | infra |
+| 6 | Prod: the prod environment, the domain, and deploys promoted from staging. | infra, security |
 | 7 | Catalog publishing at any stage, moderation, picking up (claims and contributor credit), forks and variants, and takedown. | catalog, pipeline, frontend |
 | 8 | Later: the AI-agent structure provider (planned earlier); a Berkeley provider; Save Page Now archiving with the archive.org S3-like keys; other TTS vendors; a narration voice per viewer (a fork of the `tts` stage, generated on demand); an installable app with offline listening. | backend, pipeline, frontend |
 
@@ -96,8 +100,9 @@ Each topic doc ends with its own verification section.
   after legal advice, before M7. See [catalog.md](docs/plan/catalog.md#licenses).
 - **Non-commercial licenses:** NC-licensed courses (such as MIT OCW) are published free to view
   and priced like any other course; the legal opinion should confirm this reading of the NC terms.
-- **Domain and AWS account:** not chosen yet. Needed for staging in M3 (Google OAuth, SES and
-  CloudFront).
+- **Domain and region:** not chosen yet. Needed for staging in M3 (Google OAuth, SES and
+  CloudFront). The accounts are settled: an AWS Organization with staging and prod accounts (see
+  [security.md](docs/plan/security.md)).
 
 The order the work can happen in, with branches that run in parallel, is in
 [workstreams.md](docs/plan/workstreams.md).
