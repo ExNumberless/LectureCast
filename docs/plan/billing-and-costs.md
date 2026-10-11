@@ -14,8 +14,17 @@ overview. Lives in the backend's `billing/` app and the admin dashboard.
 ## Subscriptions and credits
 
 - Stripe subscriptions through **dj-stripe**, with plans that grant monthly credits. Stripe
-  Checkout and the customer portal handle sign-up and changes.
-- `CreditLedger(user, delta, reason, run)` records every grant and charge.
+  Checkout and the customer portal handle sign-up and changes. Users verify their email before
+  subscribing.
+- **Stripe Tax** from the start, for sales tax and VAT.
+- **Rollover:** unused monthly credits carry over at renewal, up to a cap set per plan (for
+  example, one month's grant). Credits above the cap expire.
+- **Top-ups:** one-off credit packs bought through Stripe Checkout, which don't expire.
+- **Trial grant:** a small one-time grant on a user's first paid subscription, enough for about
+  one lecture.
+- `CreditLedger(user, delta, reason [grant | rollover | expire | topup | trial | reserve |
+  release | charge], run)` records every change. Credits are spent oldest grant first, top-ups
+  last.
 - Credits are priced from metered usage, at a fixed price per thousand tokens and per thousand
   characters, set in admin.
 - A run reserves credits from its estimate when confirmed, and each node is charged as it
@@ -54,4 +63,6 @@ overview. Lives in the backend's `billing/` app and the admin dashboard.
 - Capability checks per level (for example, a Scraper can't start `tts`).
 - Usage event cost calculation against the price table, including a price change.
 - Credit reservation and per-node charging for a partial run.
+- Rollover up to the cap, expiry above it, top-ups that never expire, and the trial grant given
+  once.
 - Stripe webhooks with dj-stripe fixtures in test mode.

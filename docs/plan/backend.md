@@ -9,8 +9,9 @@ Python 3.13), with the apps `accounts`, `billing`, `courses`, `pipeline` and `ca
 ## Accounts and auth
 
 `accounts.User` is a custom user model, created first. Auth uses **django-allauth in headless
-mode** with email and Google sign-in, session cookies, and CSRF. The SPA and API share one domain
-through CloudFront path routing, which avoids CORS.
+mode** with email and Google sign-in, session cookies, and CSRF. Viewers can browse as soon as
+they sign up; verifying their email is required before subscribing. The SPA and API share one
+domain through CloudFront path routing, which avoids CORS.
 
 ## Courses
 
@@ -18,7 +19,7 @@ through CloudFront path routing, which avoids CORS.
   visibility [private | published], parent, forked_at_stage)`. A fork has a `parent` and inherits
   the parent's stage outputs before `forked_at_stage` by reference, without copying.
 - `Lecture(course, number, name, title, date, audio, duration)`. The lecture list is set by the
-  `review` stage.
+  `review` stage, which can drop, rename and renumber lectures.
 - `Slide(lecture, n, kind, title, image | markdown, narration, start_ms, end_ms, source,
   locator)`, loaded from `player.json`.
 

@@ -20,17 +20,28 @@ See [pipeline.md](pipeline.md) for the stages and runs.
 - Clicking a node shows its log, usage and contributor, with Run, Retry and Fork buttons.
 - Choosing lectures and a target stage opens the estimate-and-confirm dialog for the run.
 
+## Editor
+
+- A per-section Markdown editor for materials and lecture transcripts, with a preview that
+  renders KaTeX and code.
+- A diff view of each section against the generated original, with who edited it and when.
+  Catalog courses show an "edited" mark on changed sections, linking to the diff.
+- Saving shows which later nodes become stale.
+
 ## Catalog
 
 See [catalog.md](catalog.md). Each course shows a coverage summary (how many lectures have
 reached materials, transcripts, audio and slideshow, as a compact lecture × stage grid) and its
-variants. Viewers see courses with at least one playable lecture. Paid tiers also get a "ready for
-you" filter listing courses with nodes their plan can run, whether later stages or lectures not
-started.
+variants, with the license and source credit. Viewers see courses with at least one playable
+lecture. Paid tiers also get a "ready for you" filter listing courses with nodes their plan can
+run, whether later stages or lectures not started.
 
 ## Player
 
 - Lists only the lectures that have reached the player.
+- Lectures with audio but no slides (Audio-tier output) play in the same player, showing the
+  chapter list and the narration text in place of slides. They count as playable in the
+  catalog.
 - One `<audio>` element per lecture MP3. Each slide seeks to its `start_ms`; playback stops or
   auto-advances at `end_ms`.
 - Controls: previous/next, keyboard (arrow keys and space), auto-advance toggle, playback speed,
