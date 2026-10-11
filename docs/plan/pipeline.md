@@ -89,11 +89,21 @@ Celery with a Redis broker. Each task:
 Speechify calls go to a `tts` queue with a fixed worker concurrency, so the total request rate
 stays under the plan's limits across all users.
 
+**Isolation.** `fetch` and `upload` run on a `fetch` queue served by its own service,
+`worker-fetch`, because they request user-supplied URLs and open uploaded zips. It has no API
+keys and no Django `SECRET_KEY`, and its own Postgres role reaches only the tables fetch uses (see
+[security.md](security.md#workers-and-secrets)). An SSRF bug or a malicious file there can't read
+the keys, forge sessions or touch other users' accounts. It shares Redis with the other workers,
+so Celery accepts only JSON, and every task loads its inputs from the database by node ID rather
+than trusting its arguments: an injected task can at most re-run a real node.
+
 ## Safety checks
 
 In the worker:
-- **SSRF:** resolve each URL and reject private, loopback, link-local and metadata addresses,
-  enforced in CSTL's `Web` client through an injectable URL validator.
+- **SSRF:** resolve each URL and reject private, loopback, link-local and metadata addresses
+  (including the ECS task metadata endpoint, 169.254.170.2), enforced in CSTL's `Web` client
+  through an injectable URL validator. The isolated `worker-fetch` service limits the damage if a
+  check is missed.
 - **Limits:** download size and count caps, and per-node timeouts.
 - **Uploads:** zip size, file-count and decompression-ratio checks.
 - **Per-user limits:** running nodes and a monthly cap.
@@ -116,3 +126,6 @@ In the worker:
   target or an upstream node.
 - Celery tasks run in eager mode with fake CSTL/STL reporters.
 - SSRF validator cases and zip-bomb rejection.
+- A task queued with a made-up node ID, or with arguments that don't match its node, is
+  rejected without running anything.
+- `fetch` and `upload` nodes are routed to the `fetch` queue.
