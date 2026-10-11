@@ -12,7 +12,7 @@ LectureCast/
   infra/terraform/          modules: org, network, ecs, rds, redis, storage_cdn, kms, secrets, ses,
                             backup, waf; envs: org, staging, prod
   docker/                   api.Dockerfile, worker.Dockerfile (ffmpeg, libreoffice-impress, fonts)
-  docker-compose.yml        postgres, redis, minio (S3), api, worker, vite dev server
+  docker-compose.yml        postgres, redis, rustfs (S3), mailpit, api, worker, vite dev server
   mise.toml                 python, node, uv, pnpm, terraform, and tasks: dev, test, lint, migrate, tf-plan
   .github/workflows/        ci.yml (tests, lint, type-check, terraform validate, Checkov), deploy.yml
   .github/dependabot.yml    uv, pnpm, GitHub Actions and Dockerfiles
@@ -52,7 +52,11 @@ aiming at roughly $60–100 a month for prod and close to nothing for idle stagi
   (see [security.md](security.md#data)). RDS manages its own password there. SES sends email.
   Images are stored in ECR, scanned on push.
 - **Terraform state** lives in a versioned, encrypted S3 bucket in each account, with DynamoDB
-  locking. The `org` environment is applied by hand; staging and prod through CI.
+  locking. The `org` environment is applied by hand; staging and prod through CI. Account IDs,
+  role ARNs and backend settings come from GitHub environment variables and `.env`, never from
+  committed files (see [security.md](security.md#public-repo)). A `backend "s3"` block can't read
+  Terraform variables, so each environment's bucket and lock table are passed to
+  `terraform init -backend-config=...` from those variables, with no committed `backend.hcl`.
 - **CI deploys** through GitHub OIDC, with a plan-only role for pull requests and a deploy role
   limited to the `staging` and `prod` GitHub environments: build and push images, run migrations
   as a one-off task, update services, and upload the SPA. A weekly rebuild keeps images patched,
