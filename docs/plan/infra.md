@@ -66,13 +66,20 @@ aiming at roughly $60–100 a month for prod and close to nothing for idle stagi
 - **Addresses:** prod at `lecturecast.exnumberless.com`, staging at
   `staging.lecturecast.exnumberless.com`.
 - **DNS:** `exnumberless.com` is registered with Amazon and its Route 53 zone is in the
-  management account, next to personal iCloud mail records that LectureCast doesn't touch. The
-  `org` environment adds one NS record there, delegating `lecturecast.exnumberless.com` to a
-  hosted zone in the prod account. The prod environment delegates `staging.lecturecast…` to a
-  hosted zone in the staging account the same way. Each environment then manages its own
-  certificates, SES records and CAA records.
+  management account, next to personal iCloud mail records that LectureCast doesn't touch.
+  Staging goes live in M3 but prod isn't built until M6, so the `org` environment sets up all
+  the delegation in M3:
+  - a `lecturecast.exnumberless.com` hosted zone in the prod account, and the NS record in
+    `exnumberless.com` that delegates to it;
+  - a `staging.lecturecast.exnumberless.com` hosted zone in the staging account, and the NS
+    record in the prod account's zone that delegates to it.
+
+  The staging and prod environments look their zone up by name and add only their own records:
+  certificates, SES and CAA.
 - **Google sign-in:** the OAuth consent screen lists `exnumberless.com` as its authorized domain,
-  verified with a TXT record in the management account's zone.
+  verified with a TXT record in the management account's zone. Verification also needs a home
+  page and a privacy policy URL on that domain, so both exist on staging before M3's sign-in
+  goes live.
 
 ## Verification
 
