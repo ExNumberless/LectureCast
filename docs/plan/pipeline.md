@@ -29,17 +29,18 @@ fetch / upload ─ review ┤                        └──── render ─�
 ## Models
 
 - `StageNode(course, stage, lecture?, status, settings_hash, inputs_hash, output S3 prefix,
-  run_by, frozen, claimed_by, claim_expires)`: one node of a course's graph, holding the current
-  output of one stage for one lecture (or for the course).
+  run_by, edited_by, edited_at, frozen, claimed_by, claim_expires)`: one node of a course's graph,
+  holding the current output of one stage for one lecture (or for the course).
 - `PipelineRun(course, requested_by, targets, status, estimate, actual_usage, error)`.
 - `StageRun(run, node, status, progress, log, usage, started, finished)`: one execution of a node
   within a run.
 
 ## Runs
 
-- **Review.** Review confirms which entries in the fetched sequence are real lectures (dropping
-  non-lectures and duplicates) and fixes titles and numbering. It defines the course's lecture
-  list. It doesn't decide what gets generated.
+- **Review.** Review confirms which entries in the fetched sequence are real lectures. It can
+  drop entries (non-lectures and duplicates), rename them and renumber them, but not merge or
+  split them, so each lecture keeps the files the provider grouped into it. It defines the
+  course's lecture list. It doesn't decide what gets generated.
 - **Lecture selection.** Each run targets a set of lectures from that list (a range, a pick list,
   or all) and a stage, or everything up to a stage. The estimate covers only the selected
   lectures, so a user can spend part of their credits now and generate more later. Lectures not
@@ -57,6 +58,16 @@ fetch / upload ─ review ┤                        └──── render ─�
   Frozen (published) nodes never go stale: changing them happens in a fork (see
   [catalog.md](catalog.md)).
 
+## Editing
+
+- Users can edit the output of `materials` (with `scrape`) and `transcript` (with `transcribe`),
+  one `## [N]` section at a time, as Markdown.
+- The node keeps the generated output alongside the edited one, so the site can show a diff of
+  every edit against the original, with who made it and when.
+- Saving an edit marks the nodes after it stale. Re-running `tts` after a transcript edit only
+  re-synthesizes the changed sections, since STL caches audio per segment.
+- Frozen (published) nodes are edited in a fork, like any other change to them.
+
 **Flow:** create course → fetch (website) or upload (OCW / folder) → review the lecture list →
 choose lectures and a target stage → **cost estimate, then confirm** → the graph runs → player
 (for the lectures that have reached it). Repeat for more lectures or later stages. The course can
@@ -66,11 +77,12 @@ be published at any point after review.
 
 Celery with a Redis broker. Each task:
 1. builds a local workspace from the S3 outputs of the node's upstream nodes, including inherited
-   ones for a fork;
+   ones for a fork, plus the course's shared cache;
 2. calls the CSTL/STL API with a `JobReporter` that writes progress to `StageRun` and usage to
    `UsageEvent`;
-3. uploads outputs to the node's S3 prefix, including the `.cache/` folders so re-runs are
-   incremental;
+3. uploads outputs to the node's S3 prefix, and new cache entries to the course's shared cache
+   prefix so re-runs and other lectures' nodes are incremental (cache entries are named by
+   content, so parallel nodes never conflict);
 4. charges credits as each node finishes.
 
 **Concurrency.** Lecture branches run in parallel, up to a per-user limit on running nodes.
@@ -97,7 +109,9 @@ In the worker:
 - The scheduler queues exactly the ready nodes, runs lecture branches in parallel, retries one
   failed node without re-running the others, generates and estimates only the selected lectures,
   and resumes after a simulated worker restart.
-- Staleness propagates on upstream changes but not to frozen nodes.
+- Staleness propagates on upstream changes and edits, but not to frozen nodes.
+- Editing a section keeps the generated original, and the diff shows only that section.
+- Two lecture branches running at once share the course cache without conflicts.
 - A run that includes a stage outside the user's plan is rejected, whether that stage is a
   target or an upstream node.
 - Celery tasks run in eager mode with fake CSTL/STL reporters.

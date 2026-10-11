@@ -42,7 +42,10 @@ with deleted Google Slides decks). Both run from a CLI, on files, with the user'
 - Picking up a catalog course extends the one shared course, with more lectures, later stages or
   both. A user who wants different stage settings (another voice or audience) forks it from that
   stage. Published stage outputs are frozen, and only admins unpublish or take down.
-- AWS ECS Fargate, managed with Terraform.
+- Users can edit materials and lecture transcripts before later stages run. The site keeps the
+  generated original and shows a diff of every edit.
+- AWS ECS Fargate, managed with Terraform, sized to keep idle costs low. Staging is up from M3.
+- MIT license, matching CSTL and STL.
 
 ## User levels
 
@@ -54,7 +57,7 @@ the private billing plan).
 |---|---|---|
 | **Viewer** (free) | `view_catalog`: browse and play published courses | Free sign-up |
 | **Scraper** | + `scrape` and `publish`: create courses, fetch or upload, run `materials` (including vision), review and edit materials, request catalog publication | Subscription with credits |
-| **Audio** | + `transcribe` and `narrate`: lecture transcripts (Claude) and narrated MP3s (Speechify), download audio | Higher tier |
+| **Audio** | + `transcribe` and `narrate`: lecture transcripts (Claude), editing them, and narrated MP3s (Speechify), download audio | Higher tier |
 | **Slideshow** | + `slideshow`: generate narrated slideshows (the `render` and `assemble` stages, and the player for their own courses) | Top tier |
 | **Admin** (you) | `is_staff`/superuser: Django admin, the cost dashboard, moderation, plan editing | Not sold |
 
@@ -77,14 +80,20 @@ later narrates 6–10. Each user pays only for the nodes (stage × lecture) they
 |---|---|---|
 | 1 | Phase 0 library work, with packages published. | phase0-libraries |
 | 2 | Repo scaffold and local docker-compose, with auth working end to end. | infra, backend, frontend |
-| 3 | Courses and the pipeline (stage registry, graph scheduler, runs and the pipeline view) running locally on MinIO, with no billing yet. | backend, pipeline, frontend |
-| 4 | The player. Done when CS 61A lecture 1 and 18.014 chapter A play correctly. | frontend, backend |
-| 5 | User levels and billing: plans and capabilities, Stripe test mode, estimates, credits and limits, and usage events with the admin cost dashboard. | pipeline, and the private billing plan |
-| 6 | Terraform for staging and deploy to it, then prod. | infra |
+| 3 | Courses and the pipeline (stage registry, graph scheduler, runs and the pipeline view), editing materials and transcripts with diffs, and a staging deploy, with no billing yet. | backend, pipeline, frontend, infra |
+| 4 | The player, including lectures with audio but no slides. Done when CS 61A lecture 1 and 18.014 chapter A play correctly on staging. | frontend, backend |
+| 5 | User levels and billing: plans and capabilities, Stripe test mode with Stripe Tax, estimates, credits (monthly grants with rollover, top-ups and a trial grant) and limits, and usage events with the admin cost dashboard. | pipeline, and the private billing plan |
+| 6 | Prod: the prod environment, the domain, and deploys promoted from staging. | infra |
 | 7 | Catalog publishing at any stage, moderation, picking up (claims and contributor credit), forks and variants, and takedown. | catalog, pipeline, frontend |
-| 8 | Later: the AI-agent structure provider (planned earlier), and Save Page Now archiving with the archive.org S3-like keys. | backend, pipeline |
+| 8 | Later: the AI-agent structure provider (planned earlier); a Berkeley provider; Save Page Now archiving with the archive.org S3-like keys; other TTS vendors; a narration voice per viewer (a fork of the `tts` stage, generated on demand); an installable app with offline listening. | backend, pipeline, frontend |
 
 Each topic doc ends with its own verification section.
+
+## Open questions
+
+- **Catalog licensing:** settled before M7.
+- **Domain and AWS account:** not chosen yet. Needed for staging in M3 (Google OAuth, SES and
+  CloudFront).
 
 The order the work can happen in, with branches that run in parallel, is in
 [workstreams.md](docs/plan/workstreams.md).

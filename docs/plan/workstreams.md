@@ -58,6 +58,7 @@ flowchart LR
     tf[infra-terraform]
     padapt[pipeline-adapters]
     pview[pipeline-view]
+    editing[editing]
     player[player]
     plans[billing-plans]
     stripe[billing-stripe-credits]
@@ -68,12 +69,13 @@ flowchart LR
     s --> contracts & auth & courses & fshell & tf
     contracts --> pcore & player
     courses --> pcore
-    pcore --> padapt & pview & plans & pub
-    fshell --> pview & player
+    pcore --> padapt & pview & plans & pub & editing
+    fshell --> pview & player & editing
     auth --> plans
     plans --> stripe & costs
     pub --> pick
     tf --> deploy
+    deploy --> prod[deploy-prod]
   end
   c6 --> padapt
   stl4 --> padapt
@@ -121,7 +123,8 @@ Everything else branches from `scaffold`, so it should be small and land first.
 
 | Branch | Contents | Needs |
 |---|---|---|
-| `pipeline-core` | Stage registry, `StageNode`/`PipelineRun`/`StageRun`, the scheduler, lecture selection, staleness, workspace sync to MinIO, the pipeline API; fake stages. Milestone 3's backend. | `contracts`, `courses` |
+| `deploy-staging` | Docker images, the deploy workflow, the staging environment and a smoke test, so staging is up for M3. | `infra-terraform` |
+| `pipeline-core` | Stage registry, `StageNode`/`PipelineRun`/`StageRun`, the scheduler, lecture selection, staleness, workspace sync with the shared course cache, the pipeline API; fake stages. Milestone 3's backend. | `contracts`, `courses` |
 | `player` | Player page against fixture `player.json`: seeking, auto-advance, controls, KaTeX and code slides. Milestone 4's frontend. | `contracts`, `frontend-shell` |
 
 ### LectureCast, wave 4 (all in parallel)
@@ -129,16 +132,17 @@ Everything else branches from `scaffold`, so it should be small and land first.
 | Branch | Contents | Needs |
 |---|---|---|
 | `pipeline-view` | The pipeline view: lecture × stage grid, node detail, run dialog. | `pipeline-core`, `frontend-shell` |
-| `pipeline-adapters` | Real CSTL/STL calls behind the adapter, the `tts` queue, safety checks (SSRF, limits, zip checks). Completes milestones 3 and 4 with the two test courses. | `pipeline-core`, both releases |
+| `editing` | Per-section editing of materials and transcripts, keeping the generated original; diff view; staleness on save. Part of milestone 3. | `pipeline-core`, `frontend-shell` |
+| `pipeline-adapters` | Real CSTL/STL calls behind the adapter, the `tts` queue, safety checks (SSRF, limits, zip checks). Completes milestones 3 and 4 with the two test courses on staging. | `pipeline-core`, both releases |
 | `billing-plans` | `Plan`, capabilities, `HasCapability`, run-level capability checks, locked stages in the API. | `pipeline-core`, `auth` |
-| `catalog-publish` | `Publication`, publication requests, moderation, freezing, takedown, catalog page. | `pipeline-core` |
-| `deploy-staging` | Docker images, the deploy workflow, a staging deploy and smoke test. Milestone 6. | `infra-terraform` |
+| `catalog-publish` | `Publication`, publication requests, first-publication moderation, license rules, freezing, reports and takedown, catalog page. | `pipeline-core` |
+| `deploy-prod` | The prod environment, the domain, and promoting deploys from staging. Milestone 6. | `deploy-staging` |
 
 ### LectureCast, wave 5
 
 | Branch | Contents | Needs |
 |---|---|---|
-| `billing-stripe-credits` | dj-stripe, Checkout and portal, `CreditLedger`, estimates, reservation and per-node charging, caps. | `billing-plans` |
+| `billing-stripe-credits` | dj-stripe with Stripe Tax, Checkout and portal, `CreditLedger`, monthly grants with rollover, top-ups, the trial grant, estimates, reservation and per-node charging, caps. | `billing-plans` |
 | `billing-usage-costs` | `UsageEvent`, `PriceTable`, `InfraCost`, the cost dashboard, what-if tool and alerts. | `billing-plans` |
 | `catalog-pickup-forks` | Claims, picking up, contributor credit, forks and variants, coverage grid and "ready for you". | `catalog-publish` (and `billing-stripe-credits` to charge pickups) |
 

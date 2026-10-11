@@ -35,14 +35,20 @@ The web worker calls the libraries as Python APIs, not through the CLI. Each pip
    `materials.run(cfg, names=[...])`, `lecture.run` and `tts.run` with one file, and the two
    `slides` functions. Check that each reads and writes only that lecture's files plus shared
    read-only inputs (`course.json`), so parallel lecture branches don't collide.
+   The caches are the exception: `audio/.cache/` holds every lecture's TTS segments and
+   `materials/.cache/` holds vision results per source file, which can feed several lectures.
+   Both are keyed by content (hash or source file and page), so the pipeline keeps one shared
+   cache per course that parallel nodes read and add to; check that no cache file is ever
+   rewritten with different content under the same name.
 5. **Cost estimates.** `estimate(stage, workspace, lectures)` gives expected Claude tokens and
    Speechify characters before a run, for the selected lectures only. It should be calibrated
    from the two test courses, where transcripts ran about 4,000 words, or 24,000–27,000
    characters, per lecture.
 6. **Injectable URL validator.** CSTL's `Web` client accepts a URL validator, so the worker can
    enforce its SSRF checks (see [pipeline.md](pipeline.md#safety-checks)).
-7. **Publish both packages to PyPI.** STL first, then CSTL without its git `[tool.uv.sources]`
-   entry. LectureCast pins exact versions.
+7. **Release both packages.** Both are on PyPI at 0.1.0, published by trusted publishing when a
+   GitHub release is created. Phase 0 ends with a 0.2.0 release of each, STL first, since CSTL
+   depends on it. LectureCast pins exact versions.
 
 ## Verification
 
