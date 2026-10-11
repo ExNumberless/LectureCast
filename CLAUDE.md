@@ -1,7 +1,9 @@
 # LectureCast
 
 A hosted, multi-user web app that turns course websites and course materials into narrated
-slideshows. The full plan, decisions and milestones are in [PLAN.md](PLAN.md): read it first.
+slideshows. The plan overview, decisions and milestones are in [PLAN.md](PLAN.md): read it first.
+The design is split by topic into `docs/plan/`. Read only the docs the current milestone lists in
+PLAN.md, not all of them. When a change cuts across topics, update every doc it touches.
 
 ## Related repos (local checkouts)
 
