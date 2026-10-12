@@ -142,6 +142,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+COURSE_PROVIDER_ALLOWLIST = ["website", "ocw", "folder"]
+COURSE_PLUGIN_ALLOWLIST = []
 SPECTACULAR_SETTINGS = {
     "TITLE": "LectureCast API",
     "DESCRIPTION": "The LectureCast backend API.",
@@ -153,6 +155,17 @@ CELERY_BROKER_URL = env("REDIS_URL")
 CELERY_RESULT_BACKEND = env("REDIS_URL")
 CELERY_TASK_TRACK_STARTED = True
 
-# S3-compatible storage: RustFS locally, S3 in AWS. Wired into STORAGES when media is first stored.
+# S3-compatible storage: RustFS locally and S3 in AWS.
 AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default="lecturecast-media")
 AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL", default=None)
+AWS_S3_PUBLIC_ENDPOINT_URL = env("AWS_S3_PUBLIC_ENDPOINT_URL", default=None)
+AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME", default="us-east-1")
+AWS_S3_ADDRESSING_STYLE = env("AWS_S3_ADDRESSING_STYLE", default="path")
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default=None)
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+STORAGES = {
+    "default": {"BACKEND": "storages.backends.s3.S3Storage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}

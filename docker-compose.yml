@@ -17,6 +17,7 @@ x-backend: &backend
     DATABASE_URL: postgres://lecturecast:lecturecast@postgres:5432/lecturecast
     REDIS_URL: redis://redis:6379/0
     AWS_S3_ENDPOINT_URL: http://s3:9000
+    AWS_S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
     AWS_ACCESS_KEY_ID: minioadmin
     AWS_SECRET_ACCESS_KEY: minioadmin
     EMAIL_HOST: mailpit
@@ -73,7 +74,9 @@ services:
     command:
       - >-
         until aws --endpoint-url http://s3:9000 s3api head-bucket --bucket lecturecast-media 2>/dev/null ||
-        aws --endpoint-url http://s3:9000 s3 mb s3://lecturecast-media; do sleep 1; done
+        aws --endpoint-url http://s3:9000 s3 mb s3://lecturecast-media; do sleep 1; done &&
+        aws --endpoint-url http://s3:9000 s3api put-bucket-cors --bucket lecturecast-media
+        --cors-configuration 'CORSRules=[{AllowedOrigins=["http://localhost:5173"],AllowedMethods=[POST,GET,HEAD],AllowedHeaders=["*"],ExposeHeaders=["ETag"],MaxAgeSeconds=3000}]'
 
   mailpit:
     image: axllent/mailpit:v1.31.5

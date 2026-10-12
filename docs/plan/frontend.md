@@ -7,7 +7,8 @@ JSON Schemas so its cross-file references stay checked at runtime.
 
 ## Pages
 
-Sign-in and sign-up; My courses; New course (choose a provider, then fill its settings form);
+Sign-in and sign-up; My courses; New course (choose a provider, then fill its settings form and
+upload ZIP sources directly to S3/RustFS with a short-lived form);
 course detail with the pipeline view; player; catalog; account and billing (Stripe Checkout and
 the customer portal); and the staff-only cost dashboard (see
 the private billing plan).

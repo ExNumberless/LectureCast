@@ -4,6 +4,157 @@ info:
   version: 1.0.0
   description: The LectureCast backend API.
 paths:
+  /api/courses/:
+    get:
+      operationId: courses_list
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Course'
+          description: ''
+    post:
+      operationId: courses_create
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Course'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Course'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Course'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+  /api/courses/{id}/:
+    get:
+      operationId: courses_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this course.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    put:
+      operationId: courses_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this course.
+        required: true
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Course'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Course'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Course'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    patch:
+      operationId: courses_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this course.
+        required: true
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCourse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCourse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCourse'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+  /api/courses/upload-url:
+    post:
+      operationId: courses_upload_url_create
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrl'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UploadUrl'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadUrl'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+          description: ''
   /api/health:
     get:
       operationId: health_retrieve
@@ -20,8 +171,100 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
           description: ''
+  /api/lectures/{lecture_id}/slides:
+    get:
+      operationId: lectures_slides_list
+      parameters:
+      - in: path
+        name: lecture_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - lectures
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slide'
+          description: ''
+  /api/providers:
+    get:
+      operationId: providers_list
+      tags:
+      - providers
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Provider'
+          description: ''
 components:
   schemas:
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        owner:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        source_url:
+          oneOf:
+          - type: string
+            format: uri
+          - type: string
+            maxLength: 0
+        source_file:
+          type: string
+          readOnly: true
+        source_upload:
+          type: string
+          writeOnly: true
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        plugin:
+          type: string
+          maxLength: 100
+        settings: {}
+        license:
+          type: string
+          maxLength: 100
+        visibility:
+          allOf:
+          - $ref: '#/components/schemas/VisibilityEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - owner
+      - provider
+      - source_file
+      - title
+      - updated_at
+      - visibility
     HealthResponse:
       type: object
       properties:
@@ -29,11 +272,206 @@ components:
           $ref: '#/components/schemas/StatusEnum'
       required:
       - status
+    KindEnum:
+      enum:
+      - image
+      - markdown
+      - code
+      type: string
+      description: |-
+        * `image` - Image
+        * `markdown` - Markdown
+        * `code` - Code
+    PatchedCourse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        owner:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        source_url:
+          oneOf:
+          - type: string
+            format: uri
+          - type: string
+            maxLength: 0
+        source_file:
+          type: string
+          readOnly: true
+        source_upload:
+          type: string
+          writeOnly: true
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        plugin:
+          type: string
+          maxLength: 100
+        settings: {}
+        license:
+          type: string
+          maxLength: 100
+        visibility:
+          allOf:
+          - $ref: '#/components/schemas/VisibilityEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Provider:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        source_kind:
+          $ref: '#/components/schemas/SourceKindEnum'
+        settings_schema: {}
+      required:
+      - description
+      - id
+      - name
+      - settings_schema
+      - source_kind
+    ProviderEnum:
+      enum:
+      - website
+      - ocw
+      - folder
+      type: string
+      description: |-
+        * `website` - Course website
+        * `ocw` - MIT OpenCourseWare
+        * `folder` - Folder upload
+    Slide:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        n:
+          type: integer
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindEnum'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        image:
+          type: string
+          readOnly: true
+        markdown:
+          type: string
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        language:
+          type: string
+          readOnly: true
+        width:
+          type: integer
+          readOnly: true
+          nullable: true
+        height:
+          type: integer
+          readOnly: true
+          nullable: true
+        narration:
+          type: string
+          readOnly: true
+        start_ms:
+          type: integer
+          readOnly: true
+          nullable: true
+        end_ms:
+          type: integer
+          readOnly: true
+          nullable: true
+        source:
+          type: string
+          readOnly: true
+        locator:
+          type: string
+          readOnly: true
+      required:
+      - code
+      - end_ms
+      - height
+      - id
+      - image
+      - kind
+      - language
+      - locator
+      - markdown
+      - n
+      - narration
+      - source
+      - start_ms
+      - title
+      - width
+    SourceKindEnum:
+      enum:
+      - url
+      - upload
+      type: string
+      description: |-
+        * `url` - url
+        * `upload` - upload
     StatusEnum:
       enum:
       - ok
       type: string
       description: '* `ok` - ok'
+    UploadUrl:
+      type: object
+      properties:
+        provider:
+          type: string
+        filename:
+          type: string
+          maxLength: 255
+      required:
+      - filename
+      - provider
+    UploadUrlResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+        key:
+          type: string
+      required:
+      - fields
+      - key
+      - url
+    VisibilityEnum:
+      enum:
+      - private
+      - published
+      type: string
+      description: |-
+        * `private` - Private
+        * `published` - Published
   securitySchemes:
     cookieAuth:
       type: apiKey
