@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
 const API_ROOT = '/api/auth/browser/v1'
 
 type AuthPage = 'signin' | 'signup'
 type AuthStage = 'email' | 'code'
+type AuthUser = { email: string; display: string; has_usable_password: boolean }
 
 function csrfCookie(name: string) {
   const cookie = document.cookie.split('; ').find((value) => value.startsWith(`${name}=`))
@@ -14,7 +15,7 @@ function csrfCookie(name: string) {
 async function authRequest(
   path: string,
   body?: Record<string, string>,
-  method?: 'POST',
+  method?: 'GET' | 'POST' | 'DELETE',
   allowPending = false,
 ) {
   const csrfResponse = await fetch('/api/auth/csrf/', { credentials: 'same-origin' })
@@ -47,11 +48,31 @@ function App() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [sessionUser, setSessionUser] = useState<AuthUser | null>(null)
+  const [sessionLoaded, setSessionLoaded] = useState(false)
+  const verificationStarted = useRef(false)
+
+  async function refreshSession() {
+    try {
+      const response = await fetch(`${API_ROOT}/auth/session`, { credentials: 'same-origin' })
+      const payload = await response.json()
+      setSessionUser(payload.meta?.is_authenticated ? payload.data?.user ?? null : null)
+    } catch {
+      setError('Could not check your sign-in status.')
+    } finally {
+      setSessionLoaded(true)
+    }
+  }
 
   useEffect(() => {
-    if (!verificationKey) return
+    void refreshSession()
+  }, [])
+
+  useEffect(() => {
+    if (!verificationKey || verificationStarted.current) return
+    verificationStarted.current = true
     authRequest('/auth/email/verify', { key: decodeURIComponent(verificationKey) }, 'POST')
-      .then(() => setMessage('Email verified. You can sign in with an email code.'))
+      .then(() => setMessage('Email verified.'))
       .catch((caught) => setError(caught instanceof Error ? caught.message : 'Email verification failed.'))
   }, [verificationKey])
 
@@ -93,8 +114,35 @@ function App() {
     }
   }
 
+  async function signOut() {
+    setBusy(true)
+    setError('')
+    try {
+      // allauth returns 401 with the signed-out session payload after logout.
+      await authRequest('/auth/session', undefined, 'DELETE', true)
+      setSessionUser(null)
+      window.location.assign('/signin')
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not sign out.')
+      setBusy(false)
+    }
+  }
+
+  if (!sessionLoaded && !verificationKey) {
+    return <main><p role="status">Checking your sign-in…</p></main>
+  }
+
   if (verificationKey) {
     return <main className="auth-card"><h1>Verify your email</h1>{message && <p role="status">{message}</p>}{error && <p role="alert">{error}</p>}<a href="/signin">Sign in</a></main>
+  }
+
+  if (sessionUser) {
+    return <main className="auth-card"><h1>LectureCast</h1>
+      <p role="status">You’re signed in as <strong>{sessionUser.email}</strong>.</p>
+      <p>{sessionUser.has_usable_password ? 'Password login is available for this account.' : 'This account uses email sign-in codes.'}</p>
+      {error && <p role="alert">{error}</p>}
+      <button type="button" onClick={signOut} disabled={busy}>{busy ? 'Signing out…' : 'Sign out'}</button>
+    </main>
   }
 
   if (!page) {

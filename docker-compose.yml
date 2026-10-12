@@ -13,6 +13,7 @@ x-backend: &backend
     DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-only-not-secret}
     DJANGO_DEBUG: "true"
     DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
+    CSRF_TRUSTED_ORIGINS: http://localhost:5173
     DATABASE_URL: postgres://lecturecast:lecturecast@postgres:5432/lecturecast
     REDIS_URL: redis://redis:6379/0
     AWS_S3_ENDPOINT_URL: http://s3:9000
