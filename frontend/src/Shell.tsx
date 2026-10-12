@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { components } from './api/schema'
 import { apiRequest } from './api/client'
@@ -8,6 +8,9 @@ import { Link, NavLink, Navigate, Route, Routes, useNavigate } from 'react-route
 type User = { email: string; display: string }
 type SettingProperty = { type?: string; title?: string; description?: string; enum?: (string | number | boolean)[]; items?: { type?: string } }
 type CourseCreate = Omit<components['schemas']['Course'], 'id' | 'owner' | 'source_file' | 'visibility' | 'created_at' | 'updated_at'>
+// KaTeX and highlight.js load only when a lecture is opened.
+const PlayerPage = lazy(() => import('./player/PlayerPage').then((module) => ({ default: module.PlayerPage })))
+
 const providerLabels: Record<components['schemas']['ProviderEnum'], string> = {
   website: 'Course website',
   ocw: 'MIT OpenCourseWare',
@@ -27,12 +30,14 @@ export function AppShell({ user, onSignOut }: { user: User; onSignOut: () => voi
     </aside>
     <div className="main-column">
       <header className="topbar"><span className="breadcrumb">Workspace <span>/</span> Courses</span><span className="topbar-user">{user.email}</span></header>
-      <Routes>
+      <Suspense fallback={<p className="query-message" role="status">Loading…</p>}><Routes>
         <Route path="/" element={<Navigate to="/courses" replace />} />
         <Route path="/courses" element={<MyCourses />} />
         <Route path="/courses/new" element={<NewCourse />} />
+        <Route path="/courses/:courseId/lectures/:lectureNumber" element={<PlayerPage />} />
+        <Route path="/courses/:courseId/lectures/:lectureNumber/slides/:slide" element={<PlayerPage />} />
         <Route path="*" element={<Navigate to="/courses" replace />} />
-      </Routes>
+      </Routes></Suspense>
     </div>
   </div>
 }
