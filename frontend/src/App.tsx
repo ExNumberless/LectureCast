@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { AppShell } from './Shell'
 
 const API_ROOT = '/api/auth/browser/v1'
 
@@ -138,12 +139,7 @@ function App() {
   }
 
   if (sessionUser) {
-    return <main className="auth-card"><h1>LectureCast</h1>
-      <p role="status">You’re signed in as <strong>{sessionUser.email}</strong>.</p>
-      <p>{sessionUser.has_usable_password ? 'Password login is available for this account.' : 'This account uses email sign-in codes.'}</p>
-      {error && <p role="alert">{error}</p>}
-      <button type="button" onClick={signOut} disabled={busy}>{busy ? 'Signing out…' : 'Sign out'}</button>
-    </main>
+    return <AppShell user={sessionUser} onSignOut={() => { void signOut() }} />
   }
 
   if (!page) {
