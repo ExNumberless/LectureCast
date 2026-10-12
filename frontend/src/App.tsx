@@ -52,20 +52,21 @@ function App() {
   const [sessionLoaded, setSessionLoaded] = useState(false)
   const verificationStarted = useRef(false)
 
-  async function refreshSession() {
-    try {
-      const response = await fetch(`${API_ROOT}/auth/session`, { credentials: 'same-origin' })
-      const payload = await response.json()
-      setSessionUser(payload.meta?.is_authenticated ? payload.data?.user ?? null : null)
-    } catch {
-      setError('Could not check your sign-in status.')
-    } finally {
-      setSessionLoaded(true)
-    }
-  }
-
   useEffect(() => {
-    void refreshSession()
+    let active = true
+    async function loadSession() {
+      try {
+        const response = await fetch(`${API_ROOT}/auth/session`, { credentials: 'same-origin' })
+        const payload = await response.json()
+        if (active) setSessionUser(payload.meta?.is_authenticated ? payload.data?.user ?? null : null)
+      } catch {
+        if (active) setError('Could not check your sign-in status.')
+      } finally {
+        if (active) setSessionLoaded(true)
+      }
+    }
+    void loadSession()
+    return () => { active = false }
   }, [])
 
   useEffect(() => {
