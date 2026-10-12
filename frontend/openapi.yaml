@@ -887,6 +887,16 @@ components:
         error:
           type: string
           readOnly: true
+        run_by_email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+        latest_run:
+          allOf:
+          - $ref: '#/components/schemas/StageRun'
+          nullable: true
+          readOnly: true
         updated_at:
           type: string
           format: date-time
@@ -896,8 +906,10 @@ components:
       - frozen
       - id
       - inputs_hash
+      - latest_run
       - lecture
       - lecture_title
+      - run_by_email
       - settings_hash
       - stage
       - status

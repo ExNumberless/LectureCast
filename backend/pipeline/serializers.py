@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from courses.serializers import LectureSerializer
@@ -92,6 +93,8 @@ class PipelineRunSerializer(serializers.ModelSerializer):
 
 class StageNodeSerializer(serializers.ModelSerializer):
     lecture_title = serializers.SerializerMethodField()
+    run_by_email = serializers.EmailField(source="run_by.email", allow_null=True, read_only=True, default=None)
+    latest_run = serializers.SerializerMethodField()
 
     class Meta:
         model = StageNode
@@ -105,12 +108,20 @@ class StageNodeSerializer(serializers.ModelSerializer):
             "inputs_hash",
             "frozen",
             "error",
+            "run_by_email",
+            "latest_run",
             "updated_at",
         )
         read_only_fields = fields
 
     def get_lecture_title(self, obj) -> str | None:
         return obj.lecture.title if obj.lecture else None
+
+    @extend_schema_field(StageRunSerializer(allow_null=True))
+    def get_latest_run(self, obj):
+        # Uses the prefetched runs when the view provides them (ordered by id).
+        runs = list(obj.stage_runs.all())
+        return StageRunSerializer(runs[-1]).data if runs else None
 
 
 class CourseGraphSerializer(serializers.Serializer):

@@ -401,6 +401,9 @@ export interface components {
             readonly inputs_hash: string;
             readonly frozen: boolean;
             readonly error: string;
+            /** Format: email */
+            readonly run_by_email: string | null;
+            readonly latest_run: components["schemas"]["StageRun"] | null;
             /** Format: date-time */
             readonly updated_at: string;
         };
