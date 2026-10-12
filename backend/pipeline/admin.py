@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import PipelineRun, StageNode, StageRun
+from .models import PipelineRun, SectionEdit, StageNode, StageRun
 
 
 @admin.register(StageNode)
@@ -22,3 +22,9 @@ class StageRunAdmin(admin.ModelAdmin):
     list_display = ("id", "run", "node", "status", "started_at", "finished_at")
     list_filter = ("status",)
     search_fields = ("node__course__title", "error")
+
+
+@admin.register(SectionEdit)
+class SectionEditAdmin(admin.ModelAdmin):
+    list_display = ("id", "node", "n", "edited_by", "edited_at")
+    search_fields = ("node__course__title", "edited_by__email")

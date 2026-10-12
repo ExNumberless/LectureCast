@@ -35,6 +35,8 @@ class StageNode(models.Model):
     settings_hash = models.CharField(max_length=64, blank=True)
     inputs_hash = models.CharField(max_length=64, blank=True)
     output_prefix = models.CharField(max_length=512, blank=True)
+    # Where the last run wrote its output; output_prefix moves to an edited copy when a user edits it.
+    generated_prefix = models.CharField(max_length=512, blank=True)
     run_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="pipeline_nodes_run"
     )
@@ -127,3 +129,22 @@ class StageRun(models.Model):
 
     def __str__(self):
         return f"Run {self.run_id}: {self.node}"
+
+
+class SectionEdit(models.Model):
+    """One saved edit of a `## [N]` section of a materials or transcript node's generated output."""
+
+    node = models.ForeignKey(StageNode, on_delete=models.CASCADE, related_name="section_edits")
+    generated_prefix = models.CharField(max_length=512)
+    n = models.PositiveIntegerField()
+    text = models.TextField(blank=True)
+    edited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="section_edits"
+    )
+    edited_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering: ClassVar[list[str]] = ["node_id", "n", "id"]
+
+    def __str__(self):
+        return f"Edit {self.pk} of section {self.n} in {self.node}"

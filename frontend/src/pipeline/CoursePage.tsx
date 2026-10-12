@@ -6,7 +6,7 @@ import { Link, useParams } from 'react-router'
 import { apiRequest } from '../api/client'
 import type { components } from '../api/schema'
 import {
-  STAGE_LABELS, STATUS_LABELS, LECTURE_STAGES, indexNodes, isActive, isCourseStage, nodeKey, progressText,
+  EDITABLE_STAGES, STAGE_LABELS, STATUS_LABELS, LECTURE_STAGES, indexNodes, isActive, isCourseStage, nodeKey, progressText,
   sourceStage, stageColumns,
 } from './stages'
 import type { Course, Lecture, StageName, StageNode } from './stages'
@@ -151,6 +151,8 @@ function NodeDetail({ selection, node, onClose, onRun }: {
         ? <button type="button" className="button button-primary" disabled={!runnable} onClick={() => onRun(request)}>Retry</button>
         : <button type="button" className="button button-primary" disabled={!runnable} onClick={() => onRun(request)}>Run</button>}
       <button type="button" className="button" disabled title="Forking arrives with the catalog.">Fork</button>
+      {node && EDITABLE_STAGES.includes(stage) && (status === 'succeeded' || status === 'stale') &&
+        <Link className="button" to={`nodes/${node.id}/edit`}>Edit</Link>}
     </div>
     <h3>Log</h3>
     {log.length ? <ol className="node-log">{log.map((entry, i) => <li key={i}>

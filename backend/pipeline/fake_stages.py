@@ -32,6 +32,14 @@ class FakeStageAdapter:
             }
             output = context.output_dir / "lecture-list.json"
             output.write_text(json.dumps(manifest, indent=2) + "\n")
+        elif stage in {"materials", "transcript"}:
+            # Editable stages write Markdown with one "## [N] Title" section per slide.
+            output = context.output_dir / f"{stage}.md"
+            output.write_text(
+                f"# {context.lecture}\n\n"
+                f"## [1] Overview\n\nFake {stage} for the overview of {context.lecture}.\n\n"
+                f"## [2] Details\n\nFake {stage} with math: $e^{{i\\pi}} + 1 = 0$.\n"
+            )
         else:
             output = context.output_dir / "stage.json"
             output.write_text(

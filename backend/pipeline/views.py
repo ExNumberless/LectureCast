@@ -2,6 +2,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,13 +14,17 @@ from courses.serializers import LectureSerializer
 from .models import PipelineRun, StageNode
 from .registry import public_stage_registry, source_stage
 from .scheduler import create_run, node_inputs_hash, node_settings_hash, preview_run, sync_course_staleness
+from .sections import EDITABLE_STAGES, edit_block_reason, node_sections, save_section
 from .serializers import (
     CourseEstimateSerializer,
     CourseGraphSerializer,
     CourseReviewRequestSerializer,
     CourseReviewResponseSerializer,
+    NodeSectionsSerializer,
     PipelineRunRequestSerializer,
     PipelineRunSerializer,
+    SectionUpdateRequestSerializer,
+    SectionUpdateResponseSerializer,
     StageDefinitionSerializer,
     StageNodeSerializer,
 )
@@ -153,3 +158,42 @@ class RunDetailView(GenericAPIView):
             pk=run_id,
         )
         return Response(self.get_serializer(run).data)
+
+
+class NodeBaseView(GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get_node(self):
+        return get_object_or_404(
+            StageNode.objects.select_related("course", "lecture", "run_by"),
+            pk=self.kwargs["node_id"],
+            course__owner=self.request.user,
+        )
+
+
+class NodeSectionsView(NodeBaseView):
+    serializer_class = NodeSectionsSerializer
+
+    @extend_schema(responses=NodeSectionsSerializer, tags=["pipeline"])
+    def get(self, request, node_id):
+        node = self.get_node()
+        if node.stage not in EDITABLE_STAGES or not node.output_prefix:
+            raise NotFound("This stage has no editable output.")
+        reason = edit_block_reason(node)
+        return Response(
+            NodeSectionsSerializer(
+                {"node": node, "editable": reason is None, "reason": reason, "sections": node_sections(node)}
+            ).data
+        )
+
+
+class NodeSectionView(NodeBaseView):
+    serializer_class = SectionUpdateRequestSerializer
+
+    @extend_schema(request=SectionUpdateRequestSerializer, responses=SectionUpdateResponseSerializer, tags=["pipeline"])
+    def put(self, request, node_id, n):
+        self.get_node()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        node, edit, stale = save_section(node_id, n, serializer.validated_data["text"], request.user)
+        return Response(SectionUpdateResponseSerializer({"node": node, "edit": edit, "stale_nodes": stale}).data)

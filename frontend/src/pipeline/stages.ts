@@ -6,6 +6,9 @@ export type NodeStatus = StageNode['status']
 export type Lecture = components['schemas']['Lecture']
 export type Course = components['schemas']['Course']
 
+/** Stages whose Markdown output users can edit section by section. */
+export const EDITABLE_STAGES: StageName[] = ['materials', 'transcript']
+
 export const LECTURE_STAGES: StageName[] = ['materials', 'transcript', 'tts', 'render', 'assemble']
 
 export const STAGE_LABELS: Record<StageName, string> = {

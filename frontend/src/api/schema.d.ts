@@ -149,6 +149,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/nodes/{node_id}/sections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["nodes_sections_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/nodes/{node_id}/sections/{n}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["nodes_sections_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pipeline": {
         parameters: {
             query?: never;
@@ -281,6 +313,19 @@ export interface components {
             /** Format: date */
             date?: string | null;
         };
+        NodeSection: {
+            n: number;
+            title: string;
+            text: string;
+            original: string;
+            edits: components["schemas"]["SectionEdit"][];
+        };
+        NodeSections: {
+            node: components["schemas"]["StageNode"];
+            editable: boolean;
+            reason: string | null;
+            sections: components["schemas"]["NodeSection"][];
+        };
         PatchedCourse: {
             readonly id?: number;
             readonly owner?: number;
@@ -360,6 +405,23 @@ export interface components {
          * @enum {string}
          */
         ScopeEnum: "course" | "lecture";
+        SectionEdit: {
+            readonly id: number;
+            readonly n: number;
+            readonly text: string;
+            /** Format: email */
+            readonly edited_by_email: string | null;
+            /** Format: date-time */
+            readonly edited_at: string;
+        };
+        SectionUpdateRequest: {
+            text: string;
+        };
+        SectionUpdateResponse: {
+            node: components["schemas"]["StageNode"];
+            edit: components["schemas"]["SectionEdit"] | null;
+            stale_nodes: components["schemas"]["StageNode"][];
+        };
         Slide: {
             readonly id: number;
             readonly n: number;
@@ -769,6 +831,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Slide"][];
+                };
+            };
+        };
+    };
+    nodes_sections_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                node_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NodeSections"];
+                };
+            };
+        };
+    };
+    nodes_sections_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                n: number;
+                node_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SectionUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SectionUpdateRequest"];
+                "multipart/form-data": components["schemas"]["SectionUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectionUpdateResponse"];
                 };
             };
         };
