@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "course": "Biology 101",
+  "name": "lecture-01",
+  "title": "Cell structure",
+  "number": 1,
+  "audio": "../../audio/lecture-01.mp3",
+  "slides": [
+    {
+      "n": 5,
+      "kind": "markdown",
+      "title": "Cells",
+      "source": "lecture-01.md",
+      "locator": "section 1",
+      "markdown": "Cells are the basic unit of life.",
+      "narration": "Cells are the basic unit of life.",
+      "start_ms": 0,
+      "end_ms": 3600
+    },
+    {
+      "n": 7,
+      "kind": "image",
+      "title": "Organelles",
+      "source": "lecture-01.pdf",
+      "locator": "page 2",
+      "image": "7.webp",
+      "width": 1240,
+      "height": 1755,
+      "narration": "Organelles perform specialized functions.",
+      "start_ms": 3600,
+      "end_ms": 5800
+    }
+  ]
+}
