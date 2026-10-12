@@ -130,7 +130,7 @@ function App() {
   }
 
   if (!sessionLoaded && !verificationKey) {
-    return <main><p role="status">Checking your sign-in…</p></main>
+    return <main><h1>LectureCast</h1><p role="status">Checking your sign-in…</p></main>
   }
 
   if (verificationKey) {
