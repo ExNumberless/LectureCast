@@ -8,13 +8,18 @@ terraform = "latest"
 [env]
 _.file = ".env"  # see .env.example; gitignored
 
-[tasks.install]
+[tasks."dev:install"]
 description = "Install the backend and frontend dependencies"
 run = ["uv sync --directory backend", "pnpm --dir frontend install"]
 
-[tasks.dev]
+[tasks."dev:up"]
+alias = "dev"
 description = "Run the whole stack with docker-compose"
 run = "docker-compose up --build"
+
+[tasks."dev:rebuild-frontend"]
+description = "Recreate the frontend container and reinstall its dependencies"
+run = "docker-compose up --force-recreate web"
 
 [tasks.test]
 description = "Run the backend and frontend tests"
@@ -37,7 +42,7 @@ run = [
   "pnpm --dir frontend lint --fix",
 ]
 
-[tasks.migrate]
+[tasks."dev:migrate"]
 description = "Apply database migrations"
 run = "uv run --directory backend python manage.py migrate"
 
