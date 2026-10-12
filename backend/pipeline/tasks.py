@@ -154,6 +154,7 @@ def execute_stage_run(self, stage_run_id: int):
             node = stage_run.node
             node.status = StageNode.Status.SUCCEEDED
             node.output_prefix = output_prefix
+            node.generated_prefix = output_prefix
             node.error = ""
             node.settings_hash = node_settings_hash(course, node.stage, node.lecture)
             node.inputs_hash = node_inputs_hash(course, node.stage, node.lecture)

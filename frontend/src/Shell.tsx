@@ -9,8 +9,9 @@ import { CoursePage } from './pipeline/CoursePage'
 type User = { email: string; display: string }
 type SettingProperty = { type?: string; title?: string; description?: string; enum?: (string | number | boolean)[]; items?: { type?: string } }
 type CourseCreate = Omit<components['schemas']['Course'], 'id' | 'owner' | 'source_file' | 'visibility' | 'created_at' | 'updated_at'>
-// KaTeX and highlight.js load only when a lecture is opened.
+// KaTeX and highlight.js load only when a lecture or the editor is opened.
 const PlayerPage = lazy(() => import('./player/PlayerPage').then((module) => ({ default: module.PlayerPage })))
+const EditorPage = lazy(() => import('./editing/EditorPage').then((module) => ({ default: module.EditorPage })))
 
 const providerLabels: Record<components['schemas']['ProviderEnum'], string> = {
   website: 'Course website',
@@ -36,6 +37,7 @@ export function AppShell({ user, onSignOut }: { user: User; onSignOut: () => voi
         <Route path="/courses" element={<MyCourses />} />
         <Route path="/courses/new" element={<NewCourse />} />
         <Route path="/courses/:courseId" element={<CoursePage />} />
+        <Route path="/courses/:courseId/nodes/:nodeId/edit" element={<EditorPage />} />
         <Route path="/courses/:courseId/lectures/:lectureNumber" element={<PlayerPage />} />
         <Route path="/courses/:courseId/lectures/:lectureNumber/slides/:slide" element={<PlayerPage />} />
         <Route path="*" element={<Navigate to="/courses" replace />} />

@@ -5,6 +5,8 @@ from .views import (
     CoursePipelineView,
     CourseReviewView,
     CourseRunView,
+    NodeSectionsView,
+    NodeSectionView,
     PipelineRegistryView,
     RunDetailView,
 )
@@ -15,5 +17,7 @@ urlpatterns = [
     path("courses/<int:course_id>/estimate", CourseEstimateView.as_view(), name="course-pipeline-estimate"),
     path("courses/<int:course_id>/runs", CourseRunView.as_view(), name="course-pipeline-runs"),
     path("courses/<int:course_id>/review", CourseReviewView.as_view(), name="course-review"),
+    path("nodes/<int:node_id>/sections", NodeSectionsView.as_view(), name="node-sections"),
+    path("nodes/<int:node_id>/sections/<int:n>", NodeSectionView.as_view(), name="node-section"),
     path("runs/<int:run_id>", RunDetailView.as_view(), name="pipeline-run-detail"),
 ]

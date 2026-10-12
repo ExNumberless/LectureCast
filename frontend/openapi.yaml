@@ -309,6 +309,63 @@ paths:
                 items:
                   $ref: '#/components/schemas/Slide'
           description: ''
+  /api/nodes/{node_id}/sections:
+    get:
+      operationId: nodes_sections_retrieve
+      parameters:
+      - in: path
+        name: node_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pipeline
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeSections'
+          description: ''
+  /api/nodes/{node_id}/sections/{n}:
+    put:
+      operationId: nodes_sections_update
+      parameters:
+      - in: path
+        name: n
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: node_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pipeline
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectionUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SectionUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SectionUpdateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectionUpdateResponse'
+          description: ''
   /api/pipeline:
     get:
       operationId: pipeline_list
@@ -568,6 +625,46 @@ components:
       required:
       - id
       - number
+    NodeSection:
+      type: object
+      properties:
+        n:
+          type: integer
+        title:
+          type: string
+        text:
+          type: string
+        original:
+          type: string
+        edits:
+          type: array
+          items:
+            $ref: '#/components/schemas/SectionEdit'
+      required:
+      - edits
+      - n
+      - original
+      - text
+      - title
+    NodeSections:
+      type: object
+      properties:
+        node:
+          $ref: '#/components/schemas/StageNode'
+        editable:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeSection'
+      required:
+      - editable
+      - node
+      - reason
+      - sections
     PatchedCourse:
       type: object
       properties:
@@ -752,6 +849,58 @@ components:
       description: |-
         * `course` - course
         * `lecture` - lecture
+    SectionEdit:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        n:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+          readOnly: true
+        edited_by_email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+        edited_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - edited_at
+      - edited_by_email
+      - id
+      - n
+      - text
+    SectionUpdateRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          maxLength: 200000
+      required:
+      - text
+    SectionUpdateResponse:
+      type: object
+      properties:
+        node:
+          $ref: '#/components/schemas/StageNode'
+        edit:
+          allOf:
+          - $ref: '#/components/schemas/SectionEdit'
+          nullable: true
+        stale_nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageNode'
+      required:
+      - edit
+      - node
+      - stale_nodes
     Slide:
       type: object
       properties:

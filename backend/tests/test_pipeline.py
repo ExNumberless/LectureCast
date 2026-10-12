@@ -1,11 +1,9 @@
 import json
-from collections import deque
 from pathlib import Path
 
 import pytest
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.utils.functional import empty
 from rest_framework.exceptions import ValidationError
 
 from accounts.models import User
@@ -18,49 +16,6 @@ from pipeline.scheduler import create_run, preview_run, sync_course_staleness, t
 from pipeline.workspace import hydrate_workspace, merge_course_cache, store_stage_outputs
 
 LECTURE_STAGES = ["materials", "transcript", "tts", "render", "assemble"]
-
-
-@pytest.fixture(autouse=True)
-def local_storage(settings, tmp_path):
-    settings.MEDIA_ROOT = tmp_path / "media"
-    settings.STORAGES = {
-        **settings.STORAGES,
-        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    }
-    # default_storage is cached: reset it so the override takes effect.
-    default_storage._wrapped = empty
-    yield
-    default_storage._wrapped = empty
-
-
-@pytest.fixture
-def queue(monkeypatch):
-    """Capture Celery dispatches instead of sending them to a broker."""
-    dispatched = deque()
-
-    def apply_async(args, queue):
-        dispatched.append((args[0], queue))
-
-    monkeypatch.setattr(tasks.execute_stage_run, "apply_async", apply_async)
-    return dispatched
-
-
-@pytest.fixture
-def user(db):
-    return User.objects.create_user(email="owner@example.com")
-
-
-@pytest.fixture
-def course(user):
-    return Course.objects.create(
-        owner=user, title="Algorithms", provider=Course.Provider.WEBSITE, source_url="https://example.com/course"
-    )
-
-
-@pytest.fixture
-def api(client, user):
-    client.force_login(user)
-    return client
 
 
 def drain(queue, capture):
@@ -294,9 +249,9 @@ def test_workspace_hydrates_namespaced_ancestor_outputs(
     scope = f"lecture-{first.id}"
     assert files == [
         "fetch/course/lecture-list.json",
-        f"materials/{scope}/stage.json",
+        f"materials/{scope}/materials.md",
         f"render/{scope}/stage.json",
-        f"transcript/{scope}/stage.json",
+        f"transcript/{scope}/transcript.md",
         f"tts/{scope}/stage.json",
     ]
     assert (cache_dir / "pages" / "index.html").read_bytes() == b"<html></html>"

@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from courses.serializers import LectureSerializer
 
-from .models import PipelineRun, StageNode, StageRun
+from .models import PipelineRun, SectionEdit, StageNode, StageRun
 from .registry import STAGES
 
 
@@ -134,3 +134,37 @@ class CourseReviewResponseSerializer(serializers.Serializer):
     course_id = serializers.IntegerField()
     review = StageNodeSerializer()
     lectures = LectureSerializer(many=True)
+
+
+class SectionEditSerializer(serializers.ModelSerializer):
+    edited_by_email = serializers.EmailField(source="edited_by.email", allow_null=True, read_only=True, default=None)
+
+    class Meta:
+        model = SectionEdit
+        fields = ("id", "n", "text", "edited_by_email", "edited_at")
+        read_only_fields = fields
+
+
+class NodeSectionSerializer(serializers.Serializer):
+    n = serializers.IntegerField()
+    title = serializers.CharField()
+    text = serializers.CharField(allow_blank=True)
+    original = serializers.CharField(allow_blank=True)
+    edits = SectionEditSerializer(many=True)
+
+
+class NodeSectionsSerializer(serializers.Serializer):
+    node = StageNodeSerializer()
+    editable = serializers.BooleanField()
+    reason = serializers.CharField(allow_null=True)
+    sections = NodeSectionSerializer(many=True)
+
+
+class SectionUpdateRequestSerializer(serializers.Serializer):
+    text = serializers.CharField(allow_blank=True, trim_whitespace=False, max_length=200_000)
+
+
+class SectionUpdateResponseSerializer(serializers.Serializer):
+    node = StageNodeSerializer()
+    edit = SectionEditSerializer(allow_null=True)
+    stale_nodes = StageNodeSerializer(many=True)
