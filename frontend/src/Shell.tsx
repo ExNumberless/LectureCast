@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import type { components } from './api/schema'
 import { apiRequest } from './api/client'
 import { Link, NavLink, Navigate, Route, Routes, useNavigate } from 'react-router'
+import { CoursePage } from './pipeline/CoursePage'
 
 type User = { email: string; display: string }
 type SettingProperty = { type?: string; title?: string; description?: string; enum?: (string | number | boolean)[]; items?: { type?: string } }
@@ -31,6 +32,7 @@ export function AppShell({ user, onSignOut }: { user: User; onSignOut: () => voi
         <Route path="/" element={<Navigate to="/courses" replace />} />
         <Route path="/courses" element={<MyCourses />} />
         <Route path="/courses/new" element={<NewCourse />} />
+        <Route path="/courses/:courseId" element={<CoursePage />} />
         <Route path="*" element={<Navigate to="/courses" replace />} />
       </Routes>
     </div>
@@ -51,7 +53,7 @@ function MyCourses() {
       <div className="empty-illustration" aria-hidden="true"><div className="book book-back"/><div className="book book-front"><span>✦</span></div><div className="spark spark-a">✳</div><div className="spark spark-b">✦</div></div>
       <p className="eyebrow">A FRESH START</p><h2>Your course library is ready</h2><p>Your courses will show up here. Add a course to start building your first narrated lesson.</p><Link className="button button-primary" to="/courses/new">Set up a course →</Link>
     </section>}
-    {courses.length > 0 && <section className="course-list" aria-label="Your courses">{courses.map((course) => <article className="course-row" key={course.id}><div className="course-cover">{course.title.charAt(0).toUpperCase()}</div><div className="course-row-copy"><h2>{course.title}</h2><p>{providerLabels[course.provider]} · Added {new Date(course.created_at).toLocaleDateString()}</p></div><span className="course-visibility">Private</span></article>)}</section>}
+    {courses.length > 0 && <section className="course-list" aria-label="Your courses">{courses.map((course) => <article className="course-row" key={course.id}><div className="course-cover">{course.title.charAt(0).toUpperCase()}</div><div className="course-row-copy"><h2><Link to={`/courses/${course.id}`}>{course.title}</Link></h2><p>{providerLabels[course.provider]} · Added {new Date(course.created_at).toLocaleDateString()}</p></div><span className="course-visibility">Private</span></article>)}</section>}
   </main>
 }
 

@@ -382,7 +382,12 @@ def test_api_runs_review_and_graph(api, course, queue, django_capture_on_commit_
 
     response = api.get(f"/api/courses/{course.pk}/graph")
     assert response.status_code == 200
-    assert {node["stage"] for node in response.json()["nodes"]} == {"fetch", "review"}
+    nodes = {node["stage"]: node for node in response.json()["nodes"]}
+    assert set(nodes) == {"fetch", "review"}
+    assert nodes["fetch"]["run_by_email"] == "owner@example.com"
+    assert nodes["fetch"]["latest_run"]["status"] == StageRun.Status.SUCCEEDED
+    assert nodes["fetch"]["latest_run"]["log"][-1]["message"] == "Fake fetch stage finished."
+    assert nodes["review"]["latest_run"] is None
     assert Lecture.objects.get(pk=second.pk).title == "Renamed"
 
 

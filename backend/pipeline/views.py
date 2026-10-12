@@ -49,7 +49,7 @@ class CoursePipelineView(CourseBaseView):
     def get(self, request, course_id):
         course = self.get_course()
         sync_course_staleness(course)
-        nodes = course.stage_nodes.select_related("lecture").all()
+        nodes = course.stage_nodes.select_related("lecture", "run_by").prefetch_related("stage_runs__node__lecture")
         lectures = course.lectures.order_by("number", "id")
         return Response(
             {
