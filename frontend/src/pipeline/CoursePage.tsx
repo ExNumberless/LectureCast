@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 
 import { apiRequest } from '../api/client'
+import { PublishPanel } from '../catalog/PublishPanel'
 import type { components } from '../api/schema'
 import {
   EDITABLE_STAGES, STAGE_LABELS, STATUS_LABELS, LECTURE_STAGES, indexNodes, isActive, isCourseStage, nodeKey, progressText,
@@ -66,6 +67,8 @@ export function CoursePage() {
     <PipelineGrid course={course} graph={graph} onSelect={setSelected} />
 
     {source?.status === 'succeeded' && <ReviewPanel key={graph.lectures.map((lecture) => lecture.id).join()} courseId={courseId} lectures={graph.lectures} reviewed={review?.status === 'succeeded'} />}
+
+    <PublishPanel courseId={courseId} reviewed={review?.status === 'succeeded'} />
 
     {selected && <NodeDetail
       selection={selected}

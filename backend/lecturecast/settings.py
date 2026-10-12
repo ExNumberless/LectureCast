@@ -141,6 +141,8 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Views opt in with throttle_scope: takedown requests are open to anyone.
+    "DEFAULT_THROTTLE_RATES": {"takedown": "10/hour"},
 }
 COURSE_PROVIDER_ALLOWLIST = ["website", "ocw", "folder"]
 COURSE_PLUGIN_ALLOWLIST = []

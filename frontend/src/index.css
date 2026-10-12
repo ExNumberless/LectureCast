@@ -197,3 +197,21 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .diff-added { background: #eefaf2; color: #1f7a45; }
 .diff-removed { background: #fdf0f0; color: #b42318; text-decoration: line-through; }
 @media (max-width: 720px) { .editor-layout { grid-template-columns: 1fr; } }
+
+/* Catalog */
+.catalog-list { display: grid; gap: 16px; }
+.catalog-card { display: grid; gap: 12px; padding: 20px; border: 1px solid #e6e7ef; border-radius: 12px; background: #fff; }
+.catalog-card h2 { margin: 0; font-size: 18px; }
+.coverage-totals { display: flex; flex-wrap: wrap; gap: 16px; margin: 0; }
+.coverage-totals div { display: grid; }
+.coverage-totals dt { color: #85899a; font-size: 11px; font-weight: 650; text-transform: uppercase; }
+.coverage-totals dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; }
+.coverage-grid { border-collapse: collapse; font-size: 12px; }
+.coverage-grid th, .coverage-grid td { padding: 2px 8px; text-align: left; }
+.coverage-grid td { text-align: center; }
+.coverage-dot { color: #c9cbd6; }
+.coverage-dot.done { color: #1f7a45; }
+.report-form, .publish-form { display: grid; gap: 8px; }
+.report-form textarea, .publish-form textarea, .publish-form select { width: 100%; padding: 8px; border: 1px solid #dedfe8; border-radius: 8px; font: inherit; }
+.publish-panel { margin-top: 12px; padding: 12px 16px; border: 1px solid #e6e7ef; border-radius: 12px; background: #fff; }
+.publish-panel h2 { margin: 0 0 8px; font-size: 16px; }

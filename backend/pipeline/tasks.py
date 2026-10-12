@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
+from catalog.models import is_published
 from courses.models import Course, Lecture
 
 from .contracts import StageContext
@@ -158,6 +159,8 @@ def execute_stage_run(self, stage_run_id: int):
             node.error = ""
             node.settings_hash = node_settings_hash(course, node.stage, node.lecture)
             node.inputs_hash = node_inputs_hash(course, node.stage, node.lecture)
+            # Later outputs of an approved catalog course publish, and so freeze, without moderation.
+            node.frozen = node.frozen or is_published(course.pk)
             node.save()
             stage_run.status = StageRun.Status.SUCCEEDED
             stage_run.finished_at = timezone.now()
