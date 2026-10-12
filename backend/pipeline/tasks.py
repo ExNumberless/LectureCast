@@ -103,7 +103,7 @@ def _finish_failure(stage_run_id: int, message: str):
 def execute_stage_run(self, stage_run_id: int):
     with transaction.atomic():
         stage_run = (
-            StageRun.objects.select_for_update()
+            StageRun.objects.select_for_update(of=("self",))
             .select_related("node__course", "node__lecture", "run")
             .get(pk=stage_run_id)
         )
@@ -147,7 +147,7 @@ def execute_stage_run(self, stage_run_id: int):
 
         with transaction.atomic():
             stage_run = (
-                StageRun.objects.select_for_update()
+                StageRun.objects.select_for_update(of=("self",))
                 .select_related("node__course", "node__lecture")
                 .get(pk=stage_run_id)
             )

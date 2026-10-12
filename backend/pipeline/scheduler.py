@@ -250,7 +250,7 @@ def enqueue_ready_nodes(run_id: int) -> None:
         if run.status in {PipelineRun.Status.FAILED, PipelineRun.Status.CANCELED, PipelineRun.Status.SUCCEEDED}:
             return
         queued_tasks = []
-        for stage_run in run.stage_runs.select_for_update().select_related("node__lecture"):
+        for stage_run in run.stage_runs.select_for_update(of=("self",)).select_related("node__lecture"):
             if stage_run.status != StageRun.Status.BLOCKED or STAGES[stage_run.node.stage].is_gate:
                 continue
             ready = True
