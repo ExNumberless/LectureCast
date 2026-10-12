@@ -85,6 +85,13 @@ Celery with a Redis broker. Each task:
    content, so parallel nodes never conflict);
 4. charges credits as each node finishes.
 
+Each stage receives a `StageContext` containing the isolated input and output directories, optional
+lecture name, stage settings and reporter. A `StageFunction` returns the paths it wrote relative to
+the output directory; a `StageAdapter` maps the stable stage name to the CSTL/STL implementation.
+This keeps library-specific configuration out of the scheduler. The reporter follows the shared
+Phase 0 protocol: `step(name, done, total)`, `log(message)` and `usage(vendor, model, ...)`; warnings
+use `warn(message)` when available and otherwise go through `log`.
+
 **Concurrency.** Lecture branches run in parallel, up to a per-user limit on running nodes.
 Speechify calls go to a `tts` queue with a fixed worker concurrency, so the total request rate
 stays under the plan's limits across all users.

@@ -1,7 +1,9 @@
 # Frontend (React + Vite + TypeScript)
 
 Part of the [LectureCast plan](../../PLAN.md). A single-page app in `frontend/` (pnpm), built with
-React Router and TanStack Query, with Tailwind and shadcn/ui for components.
+React Router and TanStack Query, with Tailwind and shadcn/ui for components. API types and the
+`PlayerJson` type are generated with `mise run api-types`; the player validator uses the two Phase 0
+JSON Schemas so its cross-file references stay checked at runtime.
 
 ## Pages
 

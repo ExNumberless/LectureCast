@@ -39,6 +39,11 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run python manage.py makemigrations --check --dry-run
+      - run: uv run python manage.py spectacular --file ../frontend/openapi.yaml --validate
+      - run: git -C .. diff --exit-code -- frontend/openapi.yaml
+      - run: cmp tests/fixtures/player.schema.json ../frontend/player.schema.json
+      - run: cmp tests/fixtures/slides.schema.json ../frontend/slides.schema.json
+      - run: cmp tests/fixtures/player.json ../frontend/src/contracts/player.json
       - run: uv run pytest
 
   frontend:
@@ -57,6 +62,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run generate:api
+      - run: pnpm run generate:player-types
+      - run: git diff --exit-code -- openapi.yaml src/api/schema.d.ts src/contracts/player.types.ts
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

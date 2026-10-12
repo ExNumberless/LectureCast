@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.urls import include, path
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET
+from drf_spectacular.views import SpectacularAPIView
 
 from . import views
 
@@ -16,6 +17,7 @@ def csrf_cookie(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/auth/csrf/", csrf_cookie),
     # Headless mode keeps the OAuth redirect and callback views available here.
     path("api/auth/", include("allauth.urls")),

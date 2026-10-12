@@ -40,3 +40,11 @@ run = [
 [tasks.migrate]
 description = "Apply database migrations"
 run = "uv run --directory backend python manage.py migrate"
+
+[tasks.api-types]
+description = "Generate the OpenAPI schema and TypeScript API types"
+run = [
+  "DJANGO_SECRET_KEY=type-generation-only DATABASE_URL=sqlite:////tmp/lecturecast-schema.sqlite3 REDIS_URL=redis://localhost:6379/0 uv run --directory backend python manage.py spectacular --file ../frontend/openapi.yaml --validate",
+  "pnpm --dir frontend generate:api",
+  "pnpm --dir frontend generate:player-types",
+]

@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: LectureCast API
+  version: 1.0.0
+  description: The LectureCast backend API.
+paths:
+  /api/health:
+    get:
+      operationId: health_retrieve
+      description: Report that the API is up and can reach the database.
+      tags:
+      - health
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+          description: ''
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+      required:
+      - status
+    StatusEnum:
+      enum:
+      - ok
+      type: string
+      description: '* `ok` - ok'
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
