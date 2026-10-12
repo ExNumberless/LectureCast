@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 
 def course_source_upload_to(_instance, filename):
@@ -46,13 +47,18 @@ class Lecture(models.Model):
     name = models.CharField(max_length=255, blank=True)
     title = models.CharField(max_length=500, blank=True)
     date = models.DateField(null=True, blank=True)
+    included = models.BooleanField(default=True)
     audio = models.FileField(upload_to="lectures/audio/", blank=True)
     duration_ms = models.PositiveBigIntegerField(null=True, blank=True)
 
     class Meta:
         ordering: ClassVar[list[str]] = ["number", "id"]
         constraints: ClassVar[list[models.BaseConstraint]] = [
-            models.UniqueConstraint(fields=["course", "number"], name="unique_lecture_number_per_course")
+            models.UniqueConstraint(
+                fields=["course", "number"],
+                condition=Q(included=True),
+                name="unique_included_lecture_number_per_course",
+            )
         ]
 
     def __str__(self):

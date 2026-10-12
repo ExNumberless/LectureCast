@@ -51,6 +51,8 @@ class StageContext:
     reporter: JobReporter
     lecture: str | None = None
     settings: Mapping[str, object] = field(default_factory=dict)
+    course_id: int | None = None
+    cache_dir: Path | None = None
 
 
 @dataclass(frozen=True)

@@ -20,6 +20,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/courses/{course_id}/estimate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["courses_estimate_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/courses/{course_id}/graph": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["courses_graph_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/courses/{course_id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["courses_review_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/courses/{course_id}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["courses_runs_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/courses/{id}/": {
         parameters: {
             query?: never;
@@ -85,6 +149,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["pipeline_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/providers": {
         parameters: {
             query?: never;
@@ -101,10 +181,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["runs_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description * `reuse` - reuse
+         *     * `run` - run
+         * @enum {string}
+         */
+        ActionEnum: "reuse" | "run";
         Course: {
             readonly id: number;
             readonly owner: number;
@@ -122,9 +224,36 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
-        HealthResponse: {
-            status: components["schemas"]["StatusEnum"];
+        CourseEstimate: {
+            targets: {
+                [key: string]: unknown;
+            };
+            nodes: components["schemas"]["StagePreview"][];
+            estimate: {
+                [key: string]: unknown;
+            };
         };
+        CourseGraph: {
+            course_id: number;
+            nodes: components["schemas"]["StageNode"][];
+            lectures: components["schemas"]["Lecture"][];
+        };
+        CourseReviewRequest: {
+            lectures: components["schemas"]["LectureReviewEntry"][];
+        };
+        CourseReviewResponse: {
+            course_id: number;
+            review: components["schemas"]["StageNode"];
+            lectures: components["schemas"]["Lecture"][];
+        };
+        HealthResponse: {
+            status: components["schemas"]["HealthResponseStatusEnum"];
+        };
+        /**
+         * @description * `ok` - ok
+         * @enum {string}
+         */
+        HealthResponseStatusEnum: "ok";
         /**
          * @description * `image` - Image
          *     * `markdown` - Markdown
@@ -132,6 +261,26 @@ export interface components {
          * @enum {string}
          */
         KindEnum: "image" | "markdown" | "code";
+        Lecture: {
+            readonly id: number;
+            readonly number: number;
+            readonly name: string;
+            readonly title: string;
+            /** Format: date */
+            readonly date: string | null;
+            readonly included: boolean;
+            /** Format: uri */
+            readonly audio: string | null;
+            readonly duration_ms: number | null;
+        };
+        LectureReviewEntry: {
+            id: number;
+            number: number;
+            name?: string;
+            title?: string;
+            /** Format: date */
+            date?: string | null;
+        };
         PatchedCourse: {
             readonly id?: number;
             readonly owner?: number;
@@ -149,6 +298,48 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
         };
+        PipelineRun: {
+            readonly id: number;
+            readonly course: number;
+            readonly requested_by: number;
+            readonly targets: unknown;
+            readonly status: components["schemas"]["PipelineRunStatusEnum"];
+            readonly estimate: unknown;
+            readonly actual_usage: unknown;
+            readonly error: string;
+            readonly stage_runs: components["schemas"]["StageRun"][];
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly started_at: string | null;
+            /** Format: date-time */
+            readonly finished_at: string | null;
+        };
+        PipelineRunRequest: {
+            stage: components["schemas"]["PipelineRunRequestStageEnum"];
+            lecture_ids?: number[];
+        };
+        /**
+         * @description * `fetch` - fetch
+         *     * `upload` - upload
+         *     * `review` - review
+         *     * `materials` - materials
+         *     * `transcript` - transcript
+         *     * `tts` - tts
+         *     * `render` - render
+         *     * `assemble` - assemble
+         * @enum {string}
+         */
+        PipelineRunRequestStageEnum: "fetch" | "upload" | "review" | "materials" | "transcript" | "tts" | "render" | "assemble";
+        /**
+         * @description * `pending` - Pending
+         *     * `running` - Running
+         *     * `succeeded` - Succeeded
+         *     * `failed` - Failed
+         *     * `canceled` - Canceled
+         * @enum {string}
+         */
+        PipelineRunStatusEnum: "pending" | "running" | "succeeded" | "failed" | "canceled";
         Provider: {
             id: string;
             name: string;
@@ -163,6 +354,12 @@ export interface components {
          * @enum {string}
          */
         ProviderEnum: "website" | "ocw" | "folder";
+        /**
+         * @description * `course` - course
+         *     * `lecture` - lecture
+         * @enum {string}
+         */
+        ScopeEnum: "course" | "lecture";
         Slide: {
             readonly id: number;
             readonly n: number;
@@ -186,11 +383,77 @@ export interface components {
          * @enum {string}
          */
         SourceKindEnum: "url" | "upload";
+        StageDefinition: {
+            name: string;
+            scope: components["schemas"]["ScopeEnum"];
+            dependencies: string[];
+            capability: string;
+            queue: string;
+            is_gate: boolean;
+        };
+        StageNode: {
+            readonly id: number;
+            readonly stage: components["schemas"]["StageNodeStageEnum"];
+            readonly lecture: number | null;
+            readonly lecture_title: string | null;
+            readonly status: components["schemas"]["StageNodeStatusEnum"];
+            readonly settings_hash: string;
+            readonly inputs_hash: string;
+            readonly frozen: boolean;
+            readonly error: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
         /**
-         * @description * `ok` - ok
+         * @description * `fetch` - Fetch course website
+         *     * `upload` - Import course archive
+         *     * `review` - Review lecture list
+         *     * `materials` - Prepare lecture materials
+         *     * `transcript` - Write transcript
+         *     * `tts` - Synthesize narration
+         *     * `render` - Render slides
+         *     * `assemble` - Assemble slideshow
          * @enum {string}
          */
-        StatusEnum: "ok";
+        StageNodeStageEnum: "fetch" | "upload" | "review" | "materials" | "transcript" | "tts" | "render" | "assemble";
+        /**
+         * @description * `pending` - Pending
+         *     * `queued` - Queued
+         *     * `running` - Running
+         *     * `succeeded` - Succeeded
+         *     * `failed` - Failed
+         *     * `stale` - Stale
+         * @enum {string}
+         */
+        StageNodeStatusEnum: "pending" | "queued" | "running" | "succeeded" | "failed" | "stale";
+        StagePreview: {
+            stage: string;
+            lecture_id: number | null;
+            lecture_title: string | null;
+            status: string;
+            action: components["schemas"]["ActionEnum"];
+        };
+        StageRun: {
+            readonly id: number;
+            readonly stage: string;
+            readonly lecture_id: number | null;
+            readonly lecture_title: string | null;
+            status?: components["schemas"]["StageRunStatusEnum"];
+            progress?: unknown;
+            log?: unknown;
+            usage?: unknown;
+            error?: string;
+        };
+        /**
+         * @description * `blocked` - Waiting for dependencies
+         *     * `queued` - Queued
+         *     * `running` - Running
+         *     * `succeeded` - Succeeded
+         *     * `failed` - Failed
+         *     * `skipped` - Already up to date
+         * @enum {string}
+         */
+        StageRunStatusEnum: "blocked" | "queued" | "running" | "succeeded" | "failed" | "skipped";
         UploadUrl: {
             provider: string;
             filename: string;
@@ -258,6 +521,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Course"];
+                };
+            };
+        };
+    };
+    courses_estimate_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PipelineRunRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PipelineRunRequest"];
+                "multipart/form-data": components["schemas"]["PipelineRunRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CourseEstimate"];
+                };
+            };
+        };
+    };
+    courses_graph_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CourseGraph"];
+                };
+            };
+        };
+    };
+    courses_review_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CourseReviewRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CourseReviewRequest"];
+                "multipart/form-data": components["schemas"]["CourseReviewRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CourseReviewResponse"];
+                };
+            };
+        };
+    };
+    courses_runs_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PipelineRunRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PipelineRunRequest"];
+                "multipart/form-data": components["schemas"]["PipelineRunRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineRun"];
                 };
             };
         };
@@ -405,6 +770,25 @@ export interface operations {
             };
         };
     };
+    pipeline_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StageDefinition"][];
+                };
+            };
+        };
+    };
     providers_list: {
         parameters: {
             query?: never;
@@ -420,6 +804,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Provider"][];
+                };
+            };
+        };
+    };
+    runs_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineRun"];
                 };
             };
         };
