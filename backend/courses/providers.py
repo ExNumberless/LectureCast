@@ -24,9 +24,32 @@ PROVIDER_REGISTRY = {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "type": "object",
             "properties": {
-                "site_columns": {"type": "array", "items": {"type": "string"}},
-                "course": {"type": "string"},
-                "audience": {"type": "string"},
+                "site_columns": {
+                    "type": "array",
+                    "title": "Schedule columns to include",
+                    "description": (
+                        "Optional. By default, LectureCast uses links in the schedule's Lecture column. "
+                        "Add other schedule columns that contain materials you want included. "
+                        "Separate names with commas; use | for alternatives, like textbook|reading."
+                    ),
+                    "items": {"type": "string"},
+                },
+                "course": {
+                    "type": "string",
+                    "title": "Course subject",
+                    "description": (
+                        "Optional context for the generated lectures. For example: Calculus with theory. "
+                        "This is separate from the course name in your library."
+                    ),
+                },
+                "audience": {
+                    "type": "string",
+                    "title": "Who are the lectures for?",
+                    "description": (
+                        "Optional. Describe the learners' background or level, for example: "
+                        "undergraduates who know some Python."
+                    ),
+                },
             },
             "additionalProperties": False,
         },
@@ -39,7 +62,24 @@ PROVIDER_REGISTRY = {
         settings_schema={
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "type": "object",
-            "properties": {"course": {"type": "string"}, "audience": {"type": "string"}},
+            "properties": {
+                "course": {
+                    "type": "string",
+                    "title": "Course subject",
+                    "description": (
+                        "Optional context for the generated lectures. For example: Calculus with theory. "
+                        "This is separate from the course name in your library."
+                    ),
+                },
+                "audience": {
+                    "type": "string",
+                    "title": "Who are the lectures for?",
+                    "description": (
+                        "Optional. Describe the learners' background or level, for example: "
+                        "undergraduates who know some Python."
+                    ),
+                },
+            },
             "additionalProperties": False,
         },
     ),

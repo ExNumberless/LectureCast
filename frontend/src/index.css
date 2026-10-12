@@ -91,6 +91,10 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .selected .provider-check { border-color: #665be2; background: #665be2; }
 .form-fields { display: grid; gap: 17px; margin-top: 27px; }
 .form-fields input { margin-top: 0; }
+.form-fields input[type="file"] { padding: 0; color: #85899a; }
+.form-fields input[type="file"]::file-selector-button { height: 43px; margin-right: 12px; padding: 0 14px; border: 0; border-right: 1px solid #dedbff; border-radius: 8px 0 0 8px; color: #5146e5; background: #f3f2ff; font: inherit; font-weight: 650; cursor: pointer; transition: background .15s; }
+.form-fields input[type="file"]::file-selector-button:hover { background: #eae8ff; }
+.field-help { margin-top: -2px; color: #85899a; font-size: 11px; font-weight: 400; line-height: 1.55; }
 .form-fields input:disabled { color: #a5a8b3; background: #fafafd; }
 .coming-soon { display: flex; gap: 12px; margin-top: 24px; padding: 15px; border: 1px solid #ebe9ff; border-radius: 10px; background: #faf9ff; }
 .coming-icon { display:grid; place-items:center; flex:0 0 27px; height:27px; border-radius:8px; color:#6257df; background:#eeedff; }

@@ -6,7 +6,7 @@ import { apiRequest } from './api/client'
 import { Link, NavLink, Navigate, Route, Routes, useNavigate } from 'react-router'
 
 type User = { email: string; display: string }
-type SettingProperty = { type?: string; title?: string; enum?: (string | number | boolean)[]; items?: { type?: string } }
+type SettingProperty = { type?: string; title?: string; description?: string; enum?: (string | number | boolean)[]; items?: { type?: string } }
 type CourseCreate = Omit<components['schemas']['Course'], 'id' | 'owner' | 'source_file' | 'visibility' | 'created_at' | 'updated_at'>
 const providerLabels: Record<components['schemas']['ProviderEnum'], string> = {
   website: 'Course website',
@@ -129,12 +129,12 @@ function NewCourse() {
       {providersQuery.isPending && <p className="query-message" role="status">Loading available course sources…</p>}
       {providersQuery.isError && <p className="error-notice" role="alert">{providersQuery.error.message}</p>}
       {providers.length > 0 && <div className="form-fields">
-        <label>Course name<input type="text" placeholder="e.g. Introduction to Biology" required value={title} onChange={(event) => setTitle(event.target.value)}/></label>
-        {provider?.source_kind === 'upload' ? <label>Course archive (.zip)<input type="file" accept=".zip,application/zip" required onChange={(event) => setSourceFile(event.target.files?.[0] ?? null)}/></label> : <label>Course URL<input type="url" placeholder="https://example.edu/course" required value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)}/></label>}
+        <label>Course name<input type="text" placeholder="e.g. Introduction to Biology" required value={title} onChange={(event) => setTitle(event.target.value)}/><span className="field-help">The name used to identify this course in your library.</span></label>
+        {provider?.source_kind === 'upload' ? <label>Course archive (.zip)<input type="file" accept=".zip,application/zip" required onChange={(event) => setSourceFile(event.target.files?.[0] ?? null)}/><span className="field-help">Choose the ZIP export or archive that contains the course materials.</span></label> : <label>Course website URL<input type="url" placeholder="https://example.edu/course" required value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)}/><span className="field-help">Paste the public course homepage or schedule page where LectureCast can find the materials.</span></label>}
         {Object.entries(settingProperties).map(([key, property]) => <label key={key}>{property.title ?? key.replaceAll('_', ' ')}
           {property.enum ? <select value={String(providerSettings[key] ?? '')} onChange={(event) => updateProviderSetting(key, event.target.value)}><option value="">Select…</option>{property.enum.map((value) => <option key={String(value)} value={String(value)}>{String(value)}</option>)}</select>
-            : property.type === 'array' ? <input type="text" value={Array.isArray(providerSettings[key]) ? (providerSettings[key] as string[]).join(', ') : ''} onChange={(event) => updateProviderSetting(key, event.target.value.split(',').map((value) => value.trim()).filter(Boolean))} placeholder="Separate values with commas"/>
-              : <input type="text" value={String(providerSettings[key] ?? '')} onChange={(event) => updateProviderSetting(key, event.target.value)}/>}</label>)}
+            : property.type === 'array' ? <input type="text" value={Array.isArray(providerSettings[key]) ? (providerSettings[key] as string[]).join(', ') : ''} onChange={(event) => updateProviderSetting(key, event.target.value.split(',').map((value) => value.trim()).filter(Boolean))} placeholder="e.g. lecture, textbook|reading, discussion"/>
+              : <input type="text" value={String(providerSettings[key] ?? '')} onChange={(event) => updateProviderSetting(key, event.target.value)}/>}{property.description && <span className="field-help">{property.description}</span>}</label>)}
       </div>}
       {createCourse.isError && <p className="error-notice" role="alert">{createCourse.error.message}</p>}
       <div className="form-actions"><Link className="button button-subtle" to="/courses">Cancel</Link><button className="button button-primary" type="submit" disabled={createCourse.isPending || !provider}>{createCourse.isPending ? 'Creating…' : 'Create course →'}</button></div>
