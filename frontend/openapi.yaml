@@ -4,6 +4,128 @@ info:
   version: 1.0.0
   description: The LectureCast backend API.
 paths:
+  /api/catalog:
+    get:
+      operationId: catalog_list
+      parameters:
+      - in: query
+        name: include_unplayable
+        schema:
+          type: boolean
+        description: Also list courses with no playable lecture yet.
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CatalogCourse'
+          description: ''
+  /api/catalog/{course_id}:
+    get:
+      operationId: catalog_retrieve
+      parameters:
+      - in: path
+        name: course_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogCourse'
+          description: ''
+  /api/catalog/{course_id}/reports:
+    post:
+      operationId: catalog_reports_create
+      parameters:
+      - in: path
+        name: course_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentReport'
+          description: ''
+  /api/catalog/licenses:
+    get:
+      operationId: catalog_licenses_list
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/License'
+          description: ''
+  /api/catalog/takedowns:
+    post:
+      operationId: catalog_takedowns_create
+      description: Rights holders may not have accounts, so this is open to anyone
+        and rate limited.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TakedownRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TakedownRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TakedownRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TakedownRequest'
+          description: ''
   /api/courses/:
     get:
       operationId: courses_list
@@ -96,6 +218,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CourseGraph'
+          description: ''
+  /api/courses/{course_id}/publication:
+    get:
+      operationId: courses_publication_retrieve
+      parameters:
+      - in: path
+        name: course_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+          description: ''
+    post:
+      operationId: courses_publication_create
+      parameters:
+      - in: path
+        name: course_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PublicationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PublicationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
           description: ''
   /api/courses/{course_id}/review:
     post:
@@ -309,6 +482,116 @@ paths:
                 items:
                   $ref: '#/components/schemas/Slide'
           description: ''
+  /api/moderation:
+    get:
+      operationId: moderation_retrieve
+      tags:
+      - moderation
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModerationQueue'
+          description: ''
+  /api/moderation/publications/{publication_id}:
+    post:
+      operationId: moderation_publications_create
+      parameters:
+      - in: path
+        name: publication_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - moderation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+          description: ''
+  /api/moderation/reports/{report_id}:
+    post:
+      operationId: moderation_reports_create
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - moderation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentReport'
+          description: ''
+  /api/moderation/takedowns/{takedown_id}:
+    post:
+      operationId: moderation_takedowns_create
+      parameters:
+      - in: path
+        name: takedown_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - moderation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ModerationAction'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TakedownRequest'
+          description: ''
   /api/nodes/{node_id}/sections:
     get:
       operationId: nodes_sections_retrieve
@@ -420,14 +703,124 @@ paths:
           description: ''
 components:
   schemas:
-    ActionEnum:
+    CatalogCourse:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        provider:
+          type: string
+        source_url:
+          type: string
+        license:
+          type: string
+        license_name:
+          type: string
+        attribution:
+          type: string
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        playable_lectures:
+          type: integer
+        totals:
+          type: object
+          additionalProperties:
+            type: integer
+        lectures:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoverageLecture'
+        contributors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contributor'
+      required:
+      - attribution
+      - contributors
+      - id
+      - lectures
+      - license
+      - license_name
+      - playable_lectures
+      - provider
+      - published_at
+      - source_url
+      - title
+      - totals
+    ContentReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+          readOnly: true
+        course_title:
+          type: string
+          readOnly: true
+        node:
+          type: integer
+          readOnly: true
+          nullable: true
+        reason:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ContentReportStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        resolution:
+          type: string
+          readOnly: true
+      required:
+      - course
+      - course_title
+      - created_at
+      - id
+      - node
+      - reason
+      - resolution
+      - status
+    ContentReportRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 5000
+        node:
+          type: integer
+          nullable: true
+      required:
+      - reason
+    ContentReportStatusEnum:
       enum:
-      - reuse
-      - run
+      - open
+      - resolved
       type: string
       description: |-
-        * `reuse` - reuse
-        * `run` - run
+        * `open` - Open
+        * `resolved` - Resolved
+    Contributor:
+      type: object
+      properties:
+        stage:
+          type: string
+        names:
+          type: array
+          items:
+            type: string
+      required:
+      - names
+      - stage
     Course:
       type: object
       properties:
@@ -540,6 +933,22 @@ components:
       - course_id
       - lectures
       - review
+    CoverageLecture:
+      type: object
+      properties:
+        number:
+          type: integer
+        title:
+          type: string
+        stages:
+          type: array
+          items:
+            type: string
+          description: Lecture stages this lecture has reached.
+      required:
+      - number
+      - stages
+      - title
     HealthResponse:
       type: object
       properties:
@@ -625,6 +1034,76 @@ components:
       required:
       - id
       - number
+    License:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+    LicenseEnum:
+      enum:
+      - CC-BY-3.0
+      - CC-BY-4.0
+      - CC-BY-SA-3.0
+      - CC-BY-SA-4.0
+      - CC0-1.0
+      type: string
+      description: |-
+        * `CC-BY-3.0` - CC BY 3.0
+        * `CC-BY-4.0` - CC BY 4.0
+        * `CC-BY-SA-3.0` - CC BY-SA 3.0
+        * `CC-BY-SA-4.0` - CC BY-SA 4.0
+        * `CC0-1.0` - CC0 1.0 (public domain dedication)
+    ModerationAction:
+      type: object
+      properties:
+        action:
+          $ref: '#/components/schemas/ModerationActionActionEnum'
+        note:
+          type: string
+          default: ''
+          maxLength: 5000
+      required:
+      - action
+    ModerationActionActionEnum:
+      enum:
+      - approve
+      - reject
+      - unpublish
+      - resolve
+      - take_down
+      - dismiss
+      type: string
+      description: |-
+        * `approve` - approve
+        * `reject` - reject
+        * `unpublish` - unpublish
+        * `resolve` - resolve
+        * `take_down` - take_down
+        * `dismiss` - dismiss
+    ModerationQueue:
+      type: object
+      properties:
+        publications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Publication'
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentReport'
+        takedowns:
+          type: array
+          items:
+            $ref: '#/components/schemas/TakedownRequest'
+      required:
+      - publications
+      - reports
+      - takedowns
     NodeSection:
       type: object
       properties:
@@ -841,6 +1320,75 @@ components:
         * `website` - Course website
         * `ocw` - MIT OpenCourseWare
         * `folder` - Folder upload
+    Publication:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PublicationStatusEnum'
+          readOnly: true
+        license:
+          allOf:
+          - $ref: '#/components/schemas/LicenseEnum'
+          readOnly: true
+        license_name:
+          type: string
+          readOnly: true
+        attribution:
+          type: string
+          readOnly: true
+          description: Credit for the source and its authors, shown with the course.
+        requested_at:
+          type: string
+          format: date-time
+          readOnly: true
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        review_note:
+          type: string
+          readOnly: true
+      required:
+      - attribution
+      - course
+      - id
+      - license
+      - license_name
+      - requested_at
+      - review_note
+      - reviewed_at
+      - status
+    PublicationRequest:
+      type: object
+      properties:
+        license:
+          $ref: '#/components/schemas/LicenseEnum'
+        attribution:
+          type: string
+          maxLength: 2000
+      required:
+      - attribution
+      - license
+    PublicationStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      - unpublished
+      type: string
+      description: |-
+        * `pending` - Waiting for review
+        * `approved` - Published
+        * `rejected` - Not approved
+        * `unpublished` - Unpublished by an admin
     ScopeEnum:
       enum:
       - course
@@ -1113,13 +1661,21 @@ components:
         status:
           type: string
         action:
-          $ref: '#/components/schemas/ActionEnum'
+          $ref: '#/components/schemas/StagePreviewActionEnum'
       required:
       - action
       - lecture_id
       - lecture_title
       - stage
       - status
+    StagePreviewActionEnum:
+      enum:
+      - reuse
+      - run
+      type: string
+      description: |-
+        * `reuse` - reuse
+        * `run` - run
     StageRun:
       type: object
       properties:
@@ -1165,6 +1721,54 @@ components:
         * `succeeded` - Succeeded
         * `failed` - Failed
         * `skipped` - Already up to date
+    TakedownRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+        name:
+          type: string
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        details:
+          type: string
+          description: The work claimed and why this course infringes it.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TakedownRequestStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+      required:
+      - course
+      - created_at
+      - details
+      - email
+      - id
+      - name
+      - note
+      - status
+    TakedownRequestStatusEnum:
+      enum:
+      - open
+      - taken_down
+      - dismissed
+      type: string
+      description: |-
+        * `open` - Open
+        * `taken_down` - Taken down
+        * `dismissed` - Dismissed
     UploadUrl:
       type: object
       properties:

@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import type { components } from './api/schema'
 import { apiRequest } from './api/client'
 import { Link, NavLink, Navigate, Route, Routes, useNavigate } from 'react-router'
+import { CatalogPage } from './catalog/CatalogPage'
 import { CoursePage } from './pipeline/CoursePage'
 
 type User = { email: string; display: string }
@@ -27,6 +28,7 @@ export function AppShell({ user, onSignOut }: { user: User; onSignOut: () => voi
       <nav className="side-nav" aria-label="Main navigation">
         <NavLink to="/courses" end className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}><span className="nav-icon">▦</span> My courses</NavLink>
         <NavLink to="/courses/new" className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}><span className="nav-icon">＋</span> New course</NavLink>
+        <NavLink to="/catalog" className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}><span className="nav-icon">◫</span> Catalog</NavLink>
       </nav>
       <div className="sidebar-bottom"><div className="avatar">{user.display.charAt(0).toUpperCase()}</div><div className="account-copy"><strong>{user.display}</strong><span>Personal workspace</span></div><button className="icon-button" onClick={onSignOut} aria-label="Sign out" title="Sign out">↗</button></div>
     </aside>
@@ -36,6 +38,7 @@ export function AppShell({ user, onSignOut }: { user: User; onSignOut: () => voi
         <Route path="/" element={<Navigate to="/courses" replace />} />
         <Route path="/courses" element={<MyCourses />} />
         <Route path="/courses/new" element={<NewCourse />} />
+        <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/courses/:courseId" element={<CoursePage />} />
         <Route path="/courses/:courseId/nodes/:nodeId/edit" element={<EditorPage />} />
         <Route path="/courses/:courseId/lectures/:lectureNumber" element={<PlayerPage />} />

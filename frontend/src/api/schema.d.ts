@@ -4,6 +4,87 @@
  */
 
 export interface paths {
+    "/api/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["catalog_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/{course_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["catalog_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/{course_id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["catalog_reports_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/licenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["catalog_licenses_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/takedowns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Rights holders may not have accounts, so this is open to anyone and rate limited. */
+        post: operations["catalog_takedowns_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/courses/": {
         parameters: {
             query?: never;
@@ -46,6 +127,22 @@ export interface paths {
         get: operations["courses_graph_retrieve"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/courses/{course_id}/publication": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["courses_publication_retrieve"];
+        put?: never;
+        post: operations["courses_publication_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -149,6 +246,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/moderation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["moderation_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/moderation/publications/{publication_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["moderation_publications_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/moderation/reports/{report_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["moderation_reports_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/moderation/takedowns/{takedown_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["moderation_takedowns_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/nodes/{node_id}/sections": {
         parameters: {
             query?: never;
@@ -233,12 +394,48 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CatalogCourse: {
+            id: number;
+            title: string;
+            provider: string;
+            source_url: string;
+            license: string;
+            license_name: string;
+            attribution: string;
+            /** Format: date-time */
+            published_at: string | null;
+            playable_lectures: number;
+            totals: {
+                [key: string]: number;
+            };
+            lectures: components["schemas"]["CoverageLecture"][];
+            contributors: components["schemas"]["Contributor"][];
+        };
+        ContentReport: {
+            readonly id: number;
+            readonly course: number;
+            readonly course_title: string;
+            readonly node: number | null;
+            readonly reason: string;
+            readonly status: components["schemas"]["ContentReportStatusEnum"];
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly resolution: string;
+        };
+        ContentReportRequest: {
+            reason: string;
+            node?: number | null;
+        };
         /**
-         * @description * `reuse` - reuse
-         *     * `run` - run
+         * @description * `open` - Open
+         *     * `resolved` - Resolved
          * @enum {string}
          */
-        ActionEnum: "reuse" | "run";
+        ContentReportStatusEnum: "open" | "resolved";
+        Contributor: {
+            stage: string;
+            names: string[];
+        };
         Course: {
             readonly id: number;
             readonly owner: number;
@@ -278,6 +475,12 @@ export interface components {
             review: components["schemas"]["StageNode"];
             lectures: components["schemas"]["Lecture"][];
         };
+        CoverageLecture: {
+            number: number;
+            title: string;
+            /** @description Lecture stages this lecture has reached. */
+            stages: string[];
+        };
         HealthResponse: {
             status: components["schemas"]["HealthResponseStatusEnum"];
         };
@@ -312,6 +515,39 @@ export interface components {
             title?: string;
             /** Format: date */
             date?: string | null;
+        };
+        License: {
+            id: string;
+            name: string;
+        };
+        /**
+         * @description * `CC-BY-3.0` - CC BY 3.0
+         *     * `CC-BY-4.0` - CC BY 4.0
+         *     * `CC-BY-SA-3.0` - CC BY-SA 3.0
+         *     * `CC-BY-SA-4.0` - CC BY-SA 4.0
+         *     * `CC0-1.0` - CC0 1.0 (public domain dedication)
+         * @enum {string}
+         */
+        LicenseEnum: "CC-BY-3.0" | "CC-BY-4.0" | "CC-BY-SA-3.0" | "CC-BY-SA-4.0" | "CC0-1.0";
+        ModerationAction: {
+            action: components["schemas"]["ModerationActionActionEnum"];
+            /** @default  */
+            note: string;
+        };
+        /**
+         * @description * `approve` - approve
+         *     * `reject` - reject
+         *     * `unpublish` - unpublish
+         *     * `resolve` - resolve
+         *     * `take_down` - take_down
+         *     * `dismiss` - dismiss
+         * @enum {string}
+         */
+        ModerationActionActionEnum: "approve" | "reject" | "unpublish" | "resolve" | "take_down" | "dismiss";
+        ModerationQueue: {
+            publications: components["schemas"]["Publication"][];
+            reports: components["schemas"]["ContentReport"][];
+            takedowns: components["schemas"]["TakedownRequest"][];
         };
         NodeSection: {
             n: number;
@@ -399,6 +635,32 @@ export interface components {
          * @enum {string}
          */
         ProviderEnum: "website" | "ocw" | "folder";
+        Publication: {
+            readonly id: number;
+            readonly course: number;
+            readonly status: components["schemas"]["PublicationStatusEnum"];
+            readonly license: components["schemas"]["LicenseEnum"];
+            readonly license_name: string;
+            /** @description Credit for the source and its authors, shown with the course. */
+            readonly attribution: string;
+            /** Format: date-time */
+            readonly requested_at: string;
+            /** Format: date-time */
+            readonly reviewed_at: string | null;
+            readonly review_note: string;
+        };
+        PublicationRequest: {
+            license: components["schemas"]["LicenseEnum"];
+            attribution: string;
+        };
+        /**
+         * @description * `pending` - Waiting for review
+         *     * `approved` - Published
+         *     * `rejected` - Not approved
+         *     * `unpublished` - Unpublished by an admin
+         * @enum {string}
+         */
+        PublicationStatusEnum: "pending" | "approved" | "rejected" | "unpublished";
         /**
          * @description * `course` - course
          *     * `lecture` - lecture
@@ -496,8 +758,14 @@ export interface components {
             lecture_id: number | null;
             lecture_title: string | null;
             status: string;
-            action: components["schemas"]["ActionEnum"];
+            action: components["schemas"]["StagePreviewActionEnum"];
         };
+        /**
+         * @description * `reuse` - reuse
+         *     * `run` - run
+         * @enum {string}
+         */
+        StagePreviewActionEnum: "reuse" | "run";
         StageRun: {
             readonly id: number;
             readonly stage: string;
@@ -519,6 +787,26 @@ export interface components {
          * @enum {string}
          */
         StageRunStatusEnum: "blocked" | "queued" | "running" | "succeeded" | "failed" | "skipped";
+        TakedownRequest: {
+            readonly id: number;
+            course: number;
+            name: string;
+            /** Format: email */
+            email: string;
+            /** @description The work claimed and why this course infringes it. */
+            details: string;
+            readonly status: components["schemas"]["TakedownRequestStatusEnum"];
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly note: string;
+        };
+        /**
+         * @description * `open` - Open
+         *     * `taken_down` - Taken down
+         *     * `dismissed` - Dismissed
+         * @enum {string}
+         */
+        TakedownRequestStatusEnum: "open" | "taken_down" | "dismissed";
         UploadUrl: {
             provider: string;
             filename: string;
@@ -546,6 +834,120 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    catalog_list: {
+        parameters: {
+            query?: {
+                /** @description Also list courses with no playable lecture yet. */
+                include_unplayable?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogCourse"][];
+                };
+            };
+        };
+    };
+    catalog_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogCourse"];
+                };
+            };
+        };
+    };
+    catalog_reports_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentReportRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ContentReportRequest"];
+                "multipart/form-data": components["schemas"]["ContentReportRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentReport"];
+                };
+            };
+        };
+    };
+    catalog_licenses_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["License"][];
+                };
+            };
+        };
+    };
+    catalog_takedowns_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TakedownRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TakedownRequest"];
+                "multipart/form-data": components["schemas"]["TakedownRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TakedownRequest"];
+                };
+            };
+        };
+    };
     courses_list: {
         parameters: {
             query?: never;
@@ -634,6 +1036,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CourseGraph"];
+                };
+            };
+        };
+    };
+    courses_publication_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Publication"];
+                };
+            };
+        };
+    };
+    courses_publication_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PublicationRequest"];
+                "multipart/form-data": components["schemas"]["PublicationRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Publication"];
                 };
             };
         };
@@ -831,6 +1281,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Slide"][];
+                };
+            };
+        };
+    };
+    moderation_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModerationQueue"];
+                };
+            };
+        };
+    };
+    moderation_publications_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                publication_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationAction"];
+                "application/x-www-form-urlencoded": components["schemas"]["ModerationAction"];
+                "multipart/form-data": components["schemas"]["ModerationAction"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Publication"];
+                };
+            };
+        };
+    };
+    moderation_reports_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationAction"];
+                "application/x-www-form-urlencoded": components["schemas"]["ModerationAction"];
+                "multipart/form-data": components["schemas"]["ModerationAction"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentReport"];
+                };
+            };
+        };
+    };
+    moderation_takedowns_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                takedown_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationAction"];
+                "application/x-www-form-urlencoded": components["schemas"]["ModerationAction"];
+                "multipart/form-data": components["schemas"]["ModerationAction"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TakedownRequest"];
                 };
             };
         };
