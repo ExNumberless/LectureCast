@@ -22,5 +22,6 @@ urlpatterns = [
     # Headless mode keeps the OAuth redirect and callback views available here.
     path("api/auth/", include("allauth.urls")),
     path("api/auth/", include("allauth.headless.urls")),
+    path("api/", include("courses.urls")),
     path("api/health", views.health),
 ]

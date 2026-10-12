@@ -24,7 +24,7 @@ M6 (see [security.md](security.md#edge-protection)).
 
 ## Courses
 
-- `Course(owner, title, source_url | upload, provider, plugin, settings JSON, license,
+- `Course(owner, title, source_url | S3 source key, provider, plugin, settings JSON, license,
   visibility [private | published], parent, forked_at_stage)`. A fork has a `parent` and inherits
   the parent's stage outputs before `forked_at_stage` by reference, without copying.
 - `Lecture(course, number, name, title, date, audio, duration)`. The lecture list is set by the
@@ -38,11 +38,14 @@ A settings-level allow-list of CSTL providers and plugins: `website`, `ocw` (zip
 `folder` (zip upload), and later Berkeley and AI-agent providers. Only vetted providers and
 plugins run; no user code runs on the servers. Each has a JSON schema for its user-editable
 settings, such as `site_columns`, `course`, `audience` and `tts_voice`, which the UI renders as a
-form. Unknown keys are rejected.
+form. Unknown keys are rejected. OCW and folder ZIPs use a 10-minute presigned POST directly to
+S3/RustFS, with a 500 MiB upload limit; the API verifies the owner-specific object key and that
+the uploaded object exists before creating a course.
 
 ## API (DRF)
 
-`/api/auth/*` (allauth headless), `/api/providers`, `/api/courses`, and
+`/api/auth/*` (allauth headless), `/api/providers`, `/api/courses`, a short-lived presigned S3
+upload flow for ZIP sources, and
 `/api/lectures/{id}/slides`. The pipeline, catalog and billing endpoints are listed in their own
 docs.
 
