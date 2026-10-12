@@ -96,6 +96,12 @@ later narrates 6–10. Each user pays only for the nodes (stage × lecture) they
 
 Each topic doc ends with its own verification section.
 
+## Implementation status
+
+- **Milestone 1:** Library work is tracked in the CSTL and STL repositories.
+- **Milestone 2:** Repo scaffold, contracts, email-code authentication, and the local sign-in/session flow are merged: [PR #29](https://github.com/ExNumberless/LectureCast/pull/29), [PR #34](https://github.com/ExNumberless/LectureCast/pull/34), [PR #35](https://github.com/ExNumberless/LectureCast/pull/35), and [PR #36](https://github.com/ExNumberless/LectureCast/pull/36).
+- **Milestone 3:** In progress. The `frontend-shell` implementation is in [PR #37](https://github.com/ExNumberless/LectureCast/pull/37); courses, pipeline, and staging deployment remain.
+
 ## Open questions
 
 - **Catalog licensing:** settled before M7.

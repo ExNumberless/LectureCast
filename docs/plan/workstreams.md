@@ -67,7 +67,8 @@ flowchart LR
     pick[catalog-pickup-forks]
     deploy[deploy-staging]
     s --> contracts & auth & courses & fshell & tf
-    contracts --> pcore & player
+    contracts --> pcore & player & fshell
+    auth --> fshell
     courses --> pcore
     pcore --> padapt & pview & plans & pub & editing
     fshell --> pview & player & editing
@@ -103,21 +104,21 @@ The two library tracks run in parallel from the start. Only the CSTL release wai
 
 ### LectureCast, wave 1
 
-| Branch | Contents | Needs |
-|---|---|---|
-| `scaffold` | `mise.toml`, empty Django project and apps, Vite app, docker-compose (Postgres, Redis, RustFS for S3, Mailpit), CI running lint and tests. | |
+| Branch | Contents | Needs | Status |
+|---|---|---|---|
+| `scaffold` | `mise.toml`, empty Django project and apps, Vite app, docker-compose (Postgres, Redis, RustFS for S3, Mailpit), CI running lint and tests. | | Merged: [PR #29](https://github.com/ExNumberless/LectureCast/pull/29) |
 
 Everything else branches from `scaffold`, so it should be small and land first.
 
 ### LectureCast, wave 2 (all in parallel)
 
-| Branch | Contents | Needs |
-|---|---|---|
-| `contracts` | Stage function signature and adapter interface; reporter protocol on the backend side; `player.json` and `chapters.json` fixtures copied from the library PRs; drf-spectacular and TypeScript type generation. | `scaffold` |
-| `auth` | Custom `User`, allauth headless with email and Google, `__Host-` session and CSRF cookies, sign-in and sign-up pages. Milestone 2. | `scaffold` |
-| `courses` | `Course`, `Lecture`, `Slide`; provider registry with settings schemas; courses API. | `scaffold` |
-| `frontend-shell` | Routing, layout, TanStack Query client on the generated types, shadcn/ui setup, My courses and New course pages. | `scaffold` |
-| `infra-terraform` | Terraform modules, the `org` environment (accounts, service control policies, Identity Center, CloudTrail, the `lecturecast.` and `staging.lecturecast.` hosted zones and their delegation, after auditing the existing management account) and the staging environment, with the controls in [security.md](security.md): three subnet tiers, per-service task roles, the KMS key, TLS everywhere. `validate`, Checkov, gitleaks and `plan` in CI, and Dependabot. No account IDs, bucket names or `tfvars` committed: values come from GitHub environment variables and `.env`. Doesn't touch app code. | `scaffold` |
+| Branch | Contents | Needs | Status |
+|---|---|---|---|
+| `contracts` | Stage function signature and adapter interface; reporter protocol on the backend side; `player.json` and `chapters.json` fixtures copied from the library PRs; drf-spectacular and TypeScript type generation. | `scaffold` | Merged: [PR #35](https://github.com/ExNumberless/LectureCast/pull/35) |
+| `auth` | Custom `User`, allauth headless with email and Google, `__Host-` session and CSRF cookies, sign-in and sign-up pages. Milestone 2. | `scaffold` | Merged: [PR #34](https://github.com/ExNumberless/LectureCast/pull/34); local session and sign-out flow in [PR #36](https://github.com/ExNumberless/LectureCast/pull/36) |
+| `courses` | `Course`, `Lecture`, `Slide`; provider registry with settings schemas; courses API. | `scaffold` | Next |
+| `frontend-shell` | Routing, layout, TanStack Query client on the generated types, shadcn/ui setup, My courses and New course pages. | `scaffold`, `contracts`, `auth` | PR in review: [PR #37](https://github.com/ExNumberless/LectureCast/pull/37) |
+| `infra-terraform` | Terraform modules, the `org` environment (accounts, service control policies, Identity Center, CloudTrail, the `lecturecast.` and `staging.lecturecast.` hosted zones and their delegation, after auditing the existing management account) and the staging environment, with the controls in [security.md](security.md): three subnet tiers, per-service task roles, the KMS key, TLS everywhere. `validate`, Checkov, gitleaks and `plan` in CI, and Dependabot. No account IDs, bucket names or `tfvars` committed: values come from GitHub environment variables and `.env`. Doesn't touch app code. | `scaffold` | Ready |
 
 ### LectureCast, wave 3
 
