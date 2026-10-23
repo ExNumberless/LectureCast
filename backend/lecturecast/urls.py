@@ -23,5 +23,6 @@ urlpatterns = [
     path("api/auth/", include("allauth.urls")),
     path("api/auth/", include("allauth.headless.urls")),
     path("api/", include("courses.urls")),
+    path("api/", include("pipeline.urls")),
     path("api/health", views.health),
 ]

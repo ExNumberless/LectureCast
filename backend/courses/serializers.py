@@ -101,7 +101,7 @@ class CourseSerializer(serializers.ModelSerializer):
 class LectureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecture
-        fields = ("id", "number", "name", "title", "date", "audio", "duration_ms")
+        fields = ("id", "number", "name", "title", "date", "included", "audio", "duration_ms")
         read_only_fields = fields
 
 

@@ -116,7 +116,7 @@ Everything else branches from `scaffold`, so it should be small and land first.
 |---|---|---|---|
 | `contracts` | Stage function signature and adapter interface; reporter protocol on the backend side; `player.json` and `chapters.json` fixtures copied from the library PRs; drf-spectacular and TypeScript type generation. | `scaffold` | Merged: [PR #35](https://github.com/ExNumberless/LectureCast/pull/35) |
 | `auth` | Custom `User`, allauth headless with email and Google, `__Host-` session and CSRF cookies, sign-in and sign-up pages. Milestone 2. | `scaffold` | Merged: [PR #34](https://github.com/ExNumberless/LectureCast/pull/34); local session and sign-out flow in [PR #36](https://github.com/ExNumberless/LectureCast/pull/36) |
-| `courses` | `Course`, `Lecture`, `Slide`; provider registry with settings schemas; courses API and presigned ZIP uploads. | `scaffold` | In review: [PR #39](https://github.com/ExNumberless/LectureCast/pull/39) |
+| `courses` | `Course`, `Lecture`, `Slide`; provider registry with settings schemas; courses API and presigned ZIP uploads. | `scaffold` | Merged: [PR #39](https://github.com/ExNumberless/LectureCast/pull/39) |
 | `frontend-shell` | Routing, layout, TanStack Query client on the generated types, shadcn/ui setup, My courses and New course pages. | `scaffold`, `contracts`, `auth` | Merged: [PR #37](https://github.com/ExNumberless/LectureCast/pull/37) |
 | `infra-terraform` | Terraform modules, the `org` environment (accounts, service control policies, Identity Center, CloudTrail, the `lecturecast.` and `staging.lecturecast.` hosted zones and their delegation, after auditing the existing management account) and the staging environment, with the controls in [security.md](security.md): three subnet tiers, per-service task roles, the KMS key, TLS everywhere. `validate`, Checkov, gitleaks and `plan` in CI, and Dependabot. No account IDs, bucket names or `tfvars` committed: values come from GitHub environment variables and `.env`. Doesn't touch app code. | `scaffold` | Ready |
 
@@ -125,7 +125,7 @@ Everything else branches from `scaffold`, so it should be small and land first.
 | Branch | Contents | Needs |
 |---|---|---|
 | `deploy-staging` | Docker images, the deploy workflow through the OIDC roles (account IDs and role ARNs from the `staging` GitHub environment's variables), the staging environment, weekly image rebuilds, the ZAP baseline scan, the `rotate-secrets` workflow (tested once) and a smoke test, so staging is up for M3. | `infra-terraform` |
-| `pipeline-core` | Stage registry, `StageNode`/`PipelineRun`/`StageRun`, the scheduler, lecture selection, staleness, workspace sync with the shared course cache, the pipeline API; fake stages. Milestone 3's backend. | `contracts`, `courses` |
+| `pipeline-core` | Stage registry, `StageNode`/`PipelineRun`/`StageRun`, the scheduler, lecture selection, staleness, workspace sync with the shared course cache, the pipeline API; fake stages. Milestone 3's backend. | `contracts`, `courses` | In review: [PR #41](https://github.com/ExNumberless/LectureCast/pull/41) |
 | `player` | Player page against fixture `player.json`: seeking, auto-advance, controls, KaTeX and code slides. Milestone 4's frontend. | `contracts`, `frontend-shell` |
 
 ### LectureCast, wave 4 (all in parallel)

@@ -45,6 +45,122 @@ paths:
               schema:
                 $ref: '#/components/schemas/Course'
           description: ''
+  /api/courses/{course_id}/estimate:
+    post:
+      operationId: courses_estimate_create
+      parameters:
+      - in: path
+        name: course_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pipeline
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PipelineRunRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PipelineRunRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PipelineRunRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseEstimate'
+          description: ''
+  /api/courses/{course_id}/graph:
+    get:
+      operationId: courses_graph_retrieve
+      parameters:
+      - in: path
+        name: course_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pipeline
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseGraph'
+          description: ''
+  /api/courses/{course_id}/review:
+    post:
+      operationId: courses_review_create
+      parameters:
+      - in: path
+        name: course_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pipeline
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CourseReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CourseReviewRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseReviewResponse'
+          description: ''
+  /api/courses/{course_id}/runs:
+    post:
+      operationId: courses_runs_create
+      parameters:
+      - in: path
+        name: course_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pipeline
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PipelineRunRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PipelineRunRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PipelineRunRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineRun'
+          description: ''
   /api/courses/{id}/:
     get:
       operationId: courses_retrieve
@@ -193,6 +309,22 @@ paths:
                 items:
                   $ref: '#/components/schemas/Slide'
           description: ''
+  /api/pipeline:
+    get:
+      operationId: pipeline_list
+      tags:
+      - pipeline
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StageDefinition'
+          description: ''
   /api/providers:
     get:
       operationId: providers_list
@@ -209,8 +341,36 @@ paths:
                 items:
                   $ref: '#/components/schemas/Provider'
           description: ''
+  /api/runs/{run_id}:
+    get:
+      operationId: runs_retrieve
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - runs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineRun'
+          description: ''
 components:
   schemas:
+    ActionEnum:
+      enum:
+      - reuse
+      - run
+      type: string
+      description: |-
+        * `reuse` - reuse
+        * `run` - run
     Course:
       type: object
       properties:
@@ -265,13 +425,76 @@ components:
       - title
       - updated_at
       - visibility
+    CourseEstimate:
+      type: object
+      properties:
+        targets:
+          type: object
+          additionalProperties: {}
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/StagePreview'
+        estimate:
+          type: object
+          additionalProperties: {}
+      required:
+      - estimate
+      - nodes
+      - targets
+    CourseGraph:
+      type: object
+      properties:
+        course_id:
+          type: integer
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageNode'
+        lectures:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lecture'
+      required:
+      - course_id
+      - lectures
+      - nodes
+    CourseReviewRequest:
+      type: object
+      properties:
+        lectures:
+          type: array
+          items:
+            $ref: '#/components/schemas/LectureReviewEntry'
+      required:
+      - lectures
+    CourseReviewResponse:
+      type: object
+      properties:
+        course_id:
+          type: integer
+        review:
+          $ref: '#/components/schemas/StageNode'
+        lectures:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lecture'
+      required:
+      - course_id
+      - lectures
+      - review
     HealthResponse:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/HealthResponseStatusEnum'
       required:
       - status
+    HealthResponseStatusEnum:
+      enum:
+      - ok
+      type: string
+      description: '* `ok` - ok'
     KindEnum:
       enum:
       - image
@@ -282,6 +505,69 @@ components:
         * `image` - Image
         * `markdown` - Markdown
         * `code` - Code
+    Lecture:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        included:
+          type: boolean
+          readOnly: true
+        audio:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        duration_ms:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - audio
+      - date
+      - duration_ms
+      - id
+      - included
+      - name
+      - number
+      - title
+    LectureReviewEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        number:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          maxLength: 255
+        title:
+          type: string
+          maxLength: 500
+        date:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - id
+      - number
     PatchedCourse:
       type: object
       properties:
@@ -327,6 +613,109 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PipelineRun:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+          readOnly: true
+        requested_by:
+          type: integer
+          readOnly: true
+        targets:
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PipelineRunStatusEnum'
+          readOnly: true
+        estimate:
+          readOnly: true
+        actual_usage:
+          readOnly: true
+        error:
+          type: string
+          readOnly: true
+        stage_runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageRun'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - actual_usage
+      - course
+      - created_at
+      - error
+      - estimate
+      - finished_at
+      - id
+      - requested_by
+      - stage_runs
+      - started_at
+      - status
+      - targets
+    PipelineRunRequest:
+      type: object
+      properties:
+        stage:
+          $ref: '#/components/schemas/PipelineRunRequestStageEnum'
+        lecture_ids:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+      required:
+      - stage
+    PipelineRunRequestStageEnum:
+      enum:
+      - fetch
+      - upload
+      - review
+      - materials
+      - transcript
+      - tts
+      - render
+      - assemble
+      type: string
+      description: |-
+        * `fetch` - fetch
+        * `upload` - upload
+        * `review` - review
+        * `materials` - materials
+        * `transcript` - transcript
+        * `tts` - tts
+        * `render` - render
+        * `assemble` - assemble
+    PipelineRunStatusEnum:
+      enum:
+      - pending
+      - running
+      - succeeded
+      - failed
+      - canceled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `running` - Running
+        * `succeeded` - Succeeded
+        * `failed` - Failed
+        * `canceled` - Canceled
     Provider:
       type: object
       properties:
@@ -355,6 +744,14 @@ components:
         * `website` - Course website
         * `ocw` - MIT OpenCourseWare
         * `folder` - Folder upload
+    ScopeEnum:
+      enum:
+      - course
+      - lecture
+      type: string
+      description: |-
+        * `course` - course
+        * `lecture` - lecture
     Slide:
       type: object
       properties:
@@ -432,11 +829,181 @@ components:
       description: |-
         * `url` - url
         * `upload` - upload
-    StatusEnum:
+    StageDefinition:
+      type: object
+      properties:
+        name:
+          type: string
+        scope:
+          $ref: '#/components/schemas/ScopeEnum'
+        dependencies:
+          type: array
+          items:
+            type: string
+        capability:
+          type: string
+        queue:
+          type: string
+        is_gate:
+          type: boolean
+      required:
+      - capability
+      - dependencies
+      - is_gate
+      - name
+      - queue
+      - scope
+    StageNode:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        stage:
+          allOf:
+          - $ref: '#/components/schemas/StageNodeStageEnum'
+          readOnly: true
+        lecture:
+          type: integer
+          readOnly: true
+          nullable: true
+        lecture_title:
+          type: string
+          nullable: true
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StageNodeStatusEnum'
+          readOnly: true
+        settings_hash:
+          type: string
+          readOnly: true
+        inputs_hash:
+          type: string
+          readOnly: true
+        frozen:
+          type: boolean
+          readOnly: true
+        error:
+          type: string
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - error
+      - frozen
+      - id
+      - inputs_hash
+      - lecture
+      - lecture_title
+      - settings_hash
+      - stage
+      - status
+      - updated_at
+    StageNodeStageEnum:
       enum:
-      - ok
+      - fetch
+      - upload
+      - review
+      - materials
+      - transcript
+      - tts
+      - render
+      - assemble
       type: string
-      description: '* `ok` - ok'
+      description: |-
+        * `fetch` - Fetch course website
+        * `upload` - Import course archive
+        * `review` - Review lecture list
+        * `materials` - Prepare lecture materials
+        * `transcript` - Write transcript
+        * `tts` - Synthesize narration
+        * `render` - Render slides
+        * `assemble` - Assemble slideshow
+    StageNodeStatusEnum:
+      enum:
+      - pending
+      - queued
+      - running
+      - succeeded
+      - failed
+      - stale
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `queued` - Queued
+        * `running` - Running
+        * `succeeded` - Succeeded
+        * `failed` - Failed
+        * `stale` - Stale
+    StagePreview:
+      type: object
+      properties:
+        stage:
+          type: string
+        lecture_id:
+          type: integer
+          nullable: true
+        lecture_title:
+          type: string
+          nullable: true
+        status:
+          type: string
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+      required:
+      - action
+      - lecture_id
+      - lecture_title
+      - stage
+      - status
+    StageRun:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        stage:
+          type: string
+          readOnly: true
+        lecture_id:
+          type: integer
+          readOnly: true
+          nullable: true
+        lecture_title:
+          type: string
+          nullable: true
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StageRunStatusEnum'
+        progress: {}
+        log: {}
+        usage: {}
+        error:
+          type: string
+      required:
+      - id
+      - lecture_id
+      - lecture_title
+      - stage
+    StageRunStatusEnum:
+      enum:
+      - blocked
+      - queued
+      - running
+      - succeeded
+      - failed
+      - skipped
+      type: string
+      description: |-
+        * `blocked` - Waiting for dependencies
+        * `queued` - Queued
+        * `running` - Running
+        * `succeeded` - Succeeded
+        * `failed` - Failed
+        * `skipped` - Already up to date
     UploadUrl:
       type: object
       properties:
